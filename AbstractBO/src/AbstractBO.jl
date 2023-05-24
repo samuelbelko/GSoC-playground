@@ -59,7 +59,7 @@ function eval_fun(mm::MetadataManager, f, xs)
 end
 
 """
-run optimization loop until the is_finished flag in decision support model is false
+run optimization loop until the is_finished flag in decision support model is set to true
 """
 function optimize!(dsm::DecisionSupportModel, plc::Policy, mm::MetadataManager, f)
     while !dsm.is_finished
