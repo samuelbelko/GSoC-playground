@@ -8,6 +8,6 @@ mutable struct TuRBO_plc
 end
 
 # note: policies are callable objects
-function (t_plc::TuRBO_plc)(t_dcm::TuRBO)
+function (t_plc::TuRBO_plc)(t_dcm::TuRBO_dsm)
     # use t_dcm for sampling etc...
 end
