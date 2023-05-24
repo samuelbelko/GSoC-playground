@@ -1,19 +1,19 @@
 module AbstractBO
 
-export ask, tell!, optimize # and some concrete subtypes of DSMs and Policies
+export ask, tell!, optimize! # and some concrete subtypes of DSMs and Policies
 
 include("metadata_manager.jl")
 
 """
-provide funtionalities for aggregation of observations into a decision model used in a policy,
+provide funtionalities for aggregation of observations into a decision model used by a policy;
 maintain a state of the optimization process (e.g. Trust regions in TuRBO) and surrogates
 """
 abstract type DecisionSupportModel end
 """
-maintain parameters for acquisition functions, their optimizers and anything related
-decide next observation locations based on an instance of a DecisionSupportModel,
-an instance of policy `plc` is a callable object `plc(dsm::DecisionSupportModel)`
-an advanced policy can set a flag `finished` in a DSM to stop optmization - when the cost of
+maintain parameters for acquisition functions, solvers for them and anything related;
+an object `plc` of type Policy is callable, run `plc(dsm::DecisionSupportModel)` to get
+the next observation locations;
+an advanced policy can set a flag `is_finished` in a DSM to stop optmization - when the cost of
 acquiring a new point outweights the information gain
 """
 abstract type Policy end
@@ -21,13 +21,14 @@ abstract type Policy end
 """
 perform initial sampling of f
 """
-function initialize(dsm::DecisionSupportModel, mm::MetadataManager, f) end
+function initialize!(dsm::DecisionSupportModel, mm::MetadataManager, f) end
 
 """
-return the next observation location
+return the next observation locations
 """
 function ask(dsm::DecisionSupportModel, plc::Policy, mm::MetadataManager)
-    # callable object `plc` is good for multiple dispatch
+    # callable object `plc` is a good use-case for multiple dispatch - we use it to specify
+    # the interaction between a specific dsm type and a specific policy type
     xs = plc(dsm)
     log_ask!(mm, xs)
     xs
@@ -51,16 +52,17 @@ end
 log function evaluation times
 """
 function eval_fun(mm::MetadataManager, f, xs)
-    ## eval f and log time in mm
+    # eval f and log time in mm
+    # time = ...
     log_eval!(mm, time)
-    return f.(xs)
+    f.(xs)
 end
 
 """
-run optimization loop until the finished flag in decision support model is false
+run optimization loop until the is_finished flag in decision support model is false
 """
-function optimize(dsm::DecisionSupportModel, plc::Policy, mm::MetadataManager, f)
-    while !dsm.finished
+function optimize!(dsm::DecisionSupportModel, plc::Policy, mm::MetadataManager, f)
+    while !dsm.is_finished
         # apply policy
         xs = ask(dsm, plc, mm)
         ys = eval_fun(mm, f, xs)

@@ -2,10 +2,11 @@
 Basic BO with a GP
 """
 mutable struct Basic_GP_dsm <: DecisionSupportModel
+    is_finished
     # save state, maintain a GP model
 end
 
-function initialize(dsm::Basic_GP_dsm, mm::MetadataManager, f)
+function initialize!(dsm::Basic_GP_dsm, mm::MetadataManager, f)
 
 end
 
