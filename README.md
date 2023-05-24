@@ -1,3 +1,3 @@
 # GSoC-playground
 
-A place for testing out, documenting & sharing ideas.
+A place for testing, documenting & sharing ideas.

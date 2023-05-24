@@ -1,6 +1,6 @@
 module AbstractBO
 
-export ask, tell!, optimize # add some concrete types of subtypes DSMs and Policies
+export ask, tell!, optimize # and some concrete subtypes of DSMs and Policies
 
 include("metadata_manager.jl")
 
@@ -52,6 +52,7 @@ log function evaluation times
 """
 function eval_fun(mm::MetadataManager, f, xs)
     ## eval f and log time in mm
+    log_eval!(mm, time)
     return f.(xs)
 end
 

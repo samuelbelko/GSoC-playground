@@ -16,3 +16,7 @@ initialize arbitrary TuRBO_dsm
 function initialize(dsm::TuRBO_dsm,mm::MetadataManager,f)
 
 end
+
+function add_observations!(dsm, xs, ys)
+
+end

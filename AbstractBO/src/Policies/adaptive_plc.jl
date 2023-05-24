@@ -5,6 +5,6 @@ mutable struct Adaptive_plc
     # maintain state and settings regarding acquisition functions
 end
 
-function (ada_plc::Adaptive_plc)(dsm::GP_dsm)
+function (ada_plc::Adaptive_plc)(dsm::Basic_GP_dsm)
 
 end

@@ -1,10 +1,14 @@
 """
-Popular BO with a GP
+Basic BO with a GP
 """
-mutable struct GP_dsm <: DecisionSupportModel
+mutable struct Basic_GP_dsm <: DecisionSupportModel
     # save state, maintain a GP model
 end
 
-function initialize(dsm::GP_dsm, mm::MetadataManager, f)
+function initialize(dsm::Basic_GP_dsm, mm::MetadataManager, f)
+
+end
+
+function add_observations!(dsm, xs, ys)
 
 end
