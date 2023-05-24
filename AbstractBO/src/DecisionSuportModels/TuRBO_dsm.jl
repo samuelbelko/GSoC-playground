@@ -9,3 +9,10 @@ TuRBO with GPs as surrogates
 mutable struct TuRBO_GPs_dsm <: TuRBO_dsm
     # save state: TR sizes, locations, sucess and failure counters etc.
 end
+
+"""
+initialize arbitrary TuRBO_dsm
+"""
+function initialize(dsm::TuRBO_dsm,mm::MetadataManager,f)
+
+end

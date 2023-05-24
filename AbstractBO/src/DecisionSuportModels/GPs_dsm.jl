@@ -1,6 +1,10 @@
 """
-Popular BO with GPs
+Popular BO with a GP
 """
-mutable struct GPs_dsm <: DecisionSupportModel
-    # save state: TR sizes, locations, sucess and failure counters etc.
+mutable struct GP_dsm <: DecisionSupportModel
+    # save state, maintain a GP model
+end
+
+function initialize(dsm::GP_dsm, mm::MetadataManager, f)
+
 end
