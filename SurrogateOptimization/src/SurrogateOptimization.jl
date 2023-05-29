@@ -1,8 +1,11 @@
-module AbstractBO
+module SurrogateOptimization
 
 export ask, tell!, optimize! # and some concrete subtypes of DSMs and Policies
 
-include("metadata_manager.jl")
+include("MetadataManager.jl")
+include("DecisionSupportModels/TuRBO.jl")
+include("Policies/TuRBOPolicy.jl")
+
 
 """
 provide funtionalities for aggregation of observations into a decision model used by a policy;
@@ -62,7 +65,7 @@ end
 run optimization loop until the is_finished flag in decision support model is set to true
 """
 function optimize!(dsm::DecisionSupportModel, plc::Policy, mm::MetadataManager, f)
-    while !dsm.is_finished
+    while !dsm.isdone
         # apply policy
         xs = ask(dsm, plc, mm)
         ys = eval_fun(mm, f, xs)

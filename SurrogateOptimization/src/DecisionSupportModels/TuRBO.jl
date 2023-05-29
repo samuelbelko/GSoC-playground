@@ -1,16 +1,16 @@
 """
 a generalization of TuRBO with arbitrary surrogates of type T
 """
-mutable struct TuRBO_dsm{T} <: DecisionSupportModel
+mutable struct TuRBO{T} <: DecisionSupportModel
     surrogates::Vector{T}
-    is_finished
+    isdone
     # save state: TR sizes, locations, sucess and failure counters etc.
 end
 
 """
-initialize arbitrary TuRBO_dsm{T}
+initialize arbitrary TuRBO{T}
 """
-function initialize!(dsm::TuRBO_dsm,mm::MetadataManager,f)
+function initialize!(dsm::TuRBO,mm::MetadataManager,f)
 
 end
 
