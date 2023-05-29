@@ -1,0 +1,4 @@
+name = "SurrogateOptimizationDemo"
+uuid = "5b583e0c-2a8c-4e04-b9db-0162c2b972e8"
+authors = ["Samuel Belko <samuelbelko@protonmail.com>"]
+version = "0.1.0"
