@@ -1,34 +1,37 @@
 """
-saves lowerbounds, upperbounds, number of init. samples, max iteration, max duration, etc.
-saves history, current optimizaters,
-prints stats based on verbose levels, plots performance
+Saves optimization problem and logs progress.
 """
 mutable struct OptimizationHelper
+    # Objective f
+    f::Function
     sense::Any
-    verbosity::Any
-
+    # lowerbound, upperbound
     lb::Vector{Float64}
     ub::Vector{Float64}
-    dim::Int
 
-    # n_init::Int # number of initial samples
-    # batch_size::Int
+    verbosity::Any
 
-    evaluations::Any
-    duration::Any
+    evaluation_counter::Any
+    total_duration::Any
     max_evaluations::Int
     max_duration::Int
 
-    hist_x::Vector{Float64}
-    hist_fx::Vector{Float64}
+    hist_xs::Vector{Float64}
+    hist_ys::Vector{Float64}
     observed_optimum::Float64
     observed_optimizer::Vector{Float64}
 end
-# TODO: input checks in constructor
+# TODO: checks inputs in constructor, e.g., lowerbounds .<= upperbounds
 
-# Maybe Implement here, or directly where it is used:
-function log_ask!(mm, xs) end
-function log_tell!(mm, xs, ys) end
-function log_eval!(mm, time) end
-# pritty printing based on verbose levels
-# get optimizers, stats, plots at any time (e.g. while using ask-tell interface)
+
+"""
+Evaluate objective and log number of function evaluations, total duration and update
+observed optimizer & optimal value. This is the only place where f is ever evaluated.
+"""
+function evaluate_objective!(oh::OptimizationHelper, xs)
+    # TODO: increase evaluation counter, total duration time in oh
+    # TODO: update observed optimizer
+    (oh.f).(xs)
+end
+
+# TODO: printing based on verbose levels

@@ -1,13 +1,3 @@
-"""
-Log number of function evaluations and times.
-"""
-function eval_fun(oh::OptimizationHelper, f, xs)
-    # TODO: increse evaluation counter, duration time in oh
-    # time = ...
-    log_eval!(oh, time)
-    f.(xs)
-end
-
 # copied from https://github.com/jbrea/BayesianOptimization.jl/blob/master/src/utils.jl
 import Base: iterate, length
 struct ScaledSobolIterator{T, D}

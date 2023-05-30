@@ -1,5 +1,5 @@
 """
-Maintain state of one trust region.
+Maintain the state of one trust region.
 """
 mutable struct TurboTR
     # base side length of a hyperrectangle trust region,
@@ -57,7 +57,7 @@ function update_TR!(tr::TurboTR, tr_xs, tr_ys)
         tr.base_length /= 2.0
         tr.failure_counter = 0
     end
-    # check for convergence, if we are done, we don't need to update lengths
+    # check for convergence, if we are done, we don't need to update lengths anymore
     if tr.base_length < tr.length_min
         tr.tr_isdone = true
     else
