@@ -6,5 +6,4 @@ mutable struct AdaptivePolicy
 end
 
 function (ada_plc::AdaptivePolicy)(dsm::BasicGP)
-
 end

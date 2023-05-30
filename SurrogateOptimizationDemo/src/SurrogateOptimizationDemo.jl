@@ -1,7 +1,11 @@
 module SurrogateOptimizationDemo
 
-export ask, tell!, optimize!, BasicGP, TuRBO, TuRBOPolicy, f # and some concrete subtypes of DSMs and Policies
+using Surrogates
+using AbstractGPs # access to kernels
+using SurrogatesAbstractGPs
+import Sobol: SobolSeq
 
+export ask, tell!, optimize!, BasicGP, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
 
 """
 provide funtionalities for aggregation of observations into a decision model used by a policy;
@@ -17,24 +21,24 @@ acquiring a new point outweights the information gain
 """
 abstract type Policy end
 
-include("MetadataManager.jl")
-include("DecisionSupportModels/TuRBO.jl")
-include("Policies/TuRBOPolicy.jl")
-
+include("OptimizationHelper.jl")
+include("DecisionSupportModels/Turbo/Turbo.jl")
+include("Policies/TurboPolicy.jl")
+include("utils.jl")
 
 """
 perform initial sampling of f
 """
-function initialize!(dsm::DecisionSupportModel, mm::MetadataManager, f) end
+function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper, f) end
 
 """
 return the next observation locations
 """
-function ask(dsm::DecisionSupportModel, plc::Policy, mm::MetadataManager)
+function ask(dsm::DecisionSupportModel, plc::Policy, oh::OptimizationHelper)
     # callable object `plc` is a good use-case for multiple dispatch - we use it to specify
     # the interaction between a specific dsm type and a specific policy type
     xs = plc(dsm)
-    log_ask!(mm, xs)
+    log_ask!(oh, xs)
     xs
 end
 
@@ -42,36 +46,25 @@ end
 trigger an update of the decision suport model to incorporate new observations
 `ys` at locations `xs`
 """
-function tell!(
-    dsm::DecisionSupportModel,
-    mm::MetadataManager,
-    xs::Vector{Float64},
-    ys::Vector{Float64},
-)
-    update!(dsm, xs, ys)
-    log_tell!(mm, xs, ys)
-end
-
-"""
-log function evaluation times
-"""
-function eval_fun(mm::MetadataManager, f, xs)
-    # eval f and log time in mm
-    # time = ...
-    log_eval!(mm, time)
-    f.(xs)
+function tell!(dsm::DecisionSupportModel,
+               oh::OptimizationHelper,
+               xs::Vector{Float64},
+               ys::Vector{Float64})
+    update!(dsm, oh, xs, ys)
+    # TODO: update observed_optimum in oh, append xs, ys to history
+    # log_tell!(oh, xs, ys)
 end
 
 """
 run optimization loop until the is_finished flag in decision support model is set to true
 """
-function optimize!(dsm::DecisionSupportModel, plc::Policy, mm::MetadataManager, f)
-    while !dsm.isdone
+function optimize!(dsm::DecisionSupportModel, plc::Policy, oh::OptimizationHelper, f)
+    while !dsm.isdone # TODO: and duration <= maxduration via oh
         # apply policy
-        xs = ask(dsm, plc, mm)
-        ys = eval_fun(mm, f, xs)
+        xs = ask(dsm, plc, oh)
+        ys = eval_fun(oh, f, xs)
         # trigger update of the decision supp. model
-        tell!(dsm, mm, xs, ys)
+        tell!(dsm, oh, xs, ys)
     end
 end
 
