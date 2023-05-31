@@ -43,16 +43,17 @@ Run the optimization loop.
 function optimize!(dsm::DecisionSupportModel, policy::Policy, oh::OptimizationHelper)
     while !dsm.isdone && oh.total_duration <= oh.max_duration &&
               oh.evaluation_counter <= oh.max_evaluations
-        # apply policy
+        # apply policy to get a new batch
         xs = policy(dsm)
         ys = evaluate_objective!(oh, xs)
-        # trigger update of the decision support model
+        # trigger update of the decision support model,
+        # in Turbo, this may further evaluate f when restarting a TR
         update!(dsm, oh, xs, ys)
     end
 end
 
 # Turbo needs to restart TR when the correspoding local model has converged - it is not
-# very compatible with ask-tell interface. Probably also not necessary for the use-case
+# very compatible with ask-tell interface. Probably also not necessary for the use-cases
 # of this algorihtm.
 #
 # """
