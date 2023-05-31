@@ -5,7 +5,7 @@ mutable struct OptimizationHelper
     # Objective f
     f::Function
     sense::Any
-    # lowerbound, upperbound
+    # box constraints: lowerbounds, upperbounds
     lb::Vector{Float64}
     ub::Vector{Float64}
 
@@ -21,11 +21,10 @@ mutable struct OptimizationHelper
     observed_optimum::Float64
     observed_optimizer::Vector{Float64}
 end
-# TODO: checks inputs in constructor, e.g., lowerbounds .<= upperbounds
-
+# TODO: checks inputs in constructor, e.g., @assert lb .<= ub
 
 """
-Evaluate objective and log number of function evaluations, total duration and update
+Evaluate objective. Log number of function evaluations, total duration. Update
 observed optimizer & optimal value. This is the only place where f is ever evaluated.
 """
 function evaluate_objective!(oh::OptimizationHelper, xs)

@@ -5,23 +5,23 @@ using AbstractGPs # access to kernels
 using SurrogatesAbstractGPs
 import Sobol: SobolSeq
 
-export ask, tell!, optimize!, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
+export initialize!, optimize!, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
 
 """
 Maintain a state of the decision support model (e.g. trust regions and local surrogates in TuRBO).
 
 Provide `update!(dsm::DecisionSupportModel, oh::OptimizationHelper, xs, ys)` for aggregation
-of observations `ys` at points `xs` into a decision model used by a policy.
-TODO: what does policy need from a dsm?
+of evaluations `ys` at points `xs` into a decision model.
+TODO: what does a policy need from a dsm?
 """
 abstract type DecisionSupportModel end
 """
 Decide where we evaluate the objective function next based on information aggregated
 in a decision support model.
 
-In particular, take care of acquisition functions & solvers for them. An object `policy`
-of type Policy is callable, run `policy(dsm::DecisionSupportModel)` to get the next
-observation locations.
+In particular, take care of details regarding acquisition functions & solvers for them.
+An object `policy` of type Policy is callable, run `policy(dsm::DecisionSupportModel)`
+to get the next batch of points for evaluation.
 A policy may set the flag `isdone` in a decision support model to true (when the cost of
 acquiring a new point outweights the information gain).
 """
@@ -33,7 +33,7 @@ include("Policies/TurboPolicy.jl")
 include("utils.jl")
 
 """
-Generate initial sample points, evaluate f on them and process observations.
+Generate initial sample points, evaluate f on them and process evaluations.
 """
 function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
 
