@@ -38,7 +38,7 @@ Generate initial sample points, evaluate f on them and process evaluations.
 function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
 
 """
-Run optimization loop.
+Run the optimization loop.
 """
 function optimize!(dsm::DecisionSupportModel, policy::Policy, oh::OptimizationHelper)
     while !dsm.isdone && oh.total_duration <= oh.max_duration &&
