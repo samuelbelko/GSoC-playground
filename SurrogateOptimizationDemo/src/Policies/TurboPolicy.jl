@@ -10,12 +10,14 @@ mutable struct TurboPolicy
     candidate_size::Int
 end
 
-function TurboPolicy(dimension, candidate_size = nothing)
-    # default value from the TuRBO paper
-    candidate_size_default = min(100 * dimension, 5000)
-    candidate_size = candidate_size == nothing ? candidate_size_default : candidate_size
-    TurboPolicy(candidate_size)
-end
+# TODO
+#
+# function TurboPolicy(dimension, candidate_size = nothing)
+#     # default value from the TuRBO paper
+#     candidate_size_default = min(100 * dimension, 5000)
+#     candidate_size = candidate_size == nothing ? candidate_size_default : candidate_size
+#     TurboPolicy(candidate_size)
+# end
 
 # note: policies are callable objects
 function (policy::TurboPolicy)(dcm::Turbo)
