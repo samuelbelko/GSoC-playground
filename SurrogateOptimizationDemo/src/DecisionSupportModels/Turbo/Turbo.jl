@@ -2,6 +2,7 @@ include("TurboTR.jl")
 
 """
 `TuRBO` with an arbitrary `AbstractSurrogate` local model.
+
 TODO: here assuming domain is [0,1]^dim and that we are maximizing
 TODO: it is not yet clear how it can work for an arbitrary `AbstractSurrogate`.
 """
@@ -18,6 +19,9 @@ mutable struct Turbo <: DecisionSupportModel
     isdone::Bool
     surrogates::Vector{AbstractSurrogate}
     trs::Vector{TurboTR}
+    # TODO: hyperparameters for each TR
+    # hyperparameters::Vector{Float64}
+
     # use these for construction of surrogates at initialization and init. after restarting a TR
     surrogate_type::Type
     surrogate_args::Tuple
