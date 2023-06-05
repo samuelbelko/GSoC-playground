@@ -36,6 +36,10 @@ function Turbo(n_surrogates, batch_size, dim, surrogate_type, surrogate_args,
         throw(ArgumentError("expecting surrogate_type to be a subtype of AbstractSurrogate"))
     # create placeholders for surrogates and trs;
     # merge TR options with defaults from the paper
+
+    # TODO: how to include default params specially for the GP model?
+    #       - in the paper Matérn-5/2 kernel, constant mean, ARD with bounds on hyperparams.
+    #         lengthscale λ_i in [0.005,2.0], signal variance s^2 in [0.05,20.0], noise var. σ^2 in [0.0005,0.1]
     Turbo(n_surrogates, batch_size, dim, false,
           Vector{AbstractSurrogate}(undef, n_surrogates),
           Vector{TurboTR}(undef, n_surrogates),
