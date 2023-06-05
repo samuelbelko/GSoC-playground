@@ -32,8 +32,8 @@ function (policy::TurboPolicy)(dcm::Turbo)
             tr_xs = turbo_policy_seq(dcm, policy.candidate_size, j)
             # calculate approximation function values at tr_xs via the j-th surrogate
             tr_ys = (dcm.surrogates[j]).(tr_xs)
-            push!(combined_xs, tr_xs)
-            push!(combined_ys, tr_ys)
+            append!(combined_xs, tr_xs)
+            append!(combined_ys, tr_ys)
         end
         next_points[i] = combined_xs[argmax(combined_ys)]
     end
