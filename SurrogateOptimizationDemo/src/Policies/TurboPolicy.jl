@@ -41,6 +41,18 @@ function (policy::TurboPolicy)(dcm::Turbo)
 end
 
 # TODO: modified Sobol sequence at the intersection of [0,1]^d and j-th TR
-# function turbo_policy_seq(dcm::Turbo, candidate_size, j)
-
-# end
+function turbo_policy_seq(dcm::Turbo, candidate_size, j)
+    xs = []
+    # following the construction from the paper: supplement material part D; and python implementation
+    prob_of_perturbation = min(20.0 / dcm.dimension, 1)
+    # TODO: scrambled Sobol?
+    for pertubation in ScaledSobolIterator(dcm.trs[j].lb , dcm.trs[j].ub, candidate_size)
+        x = dcm.trs[j].center .* ones(dsm.dimension)
+        # TODO: use seed for reproducibility?
+        # each index between 1:dsm.dimension is chosen with prob. prob_of_perturbation
+        inds = [i for i in 1:dsm.dimension if rand() <= prob_of_perturbation ]
+        x[inds] = perturbations[inds]
+        push!(xs, x)
+    end
+    xs
+end

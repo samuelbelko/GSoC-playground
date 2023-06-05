@@ -33,7 +33,8 @@ include("Policies/TurboPolicy.jl")
 include("utils.jl")
 
 """
-Generate initial sample points, evaluate f on them and process evaluations.
+Generate initial sample points, evaluate f on them and process evaluations in
+a decision support model.
 """
 function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
 
