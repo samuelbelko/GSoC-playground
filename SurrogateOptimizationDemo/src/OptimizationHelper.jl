@@ -4,17 +4,24 @@ Saves optimization problem and logs progress.
 mutable struct OptimizationHelper
     # Objective f
     f::Function
-    sense::Any
-    # box constraints: lowerbounds, upperbounds
-    lb::Vector{Float64}
-    ub::Vector{Float64}
+    # TODO: dimension can be computed from lowerbounds
+    dimension::Int
+    # TODO: sense, for now we maximate
+    # sense::Any
 
-    verbosity::Any
+    # TODO: lb, up; for now we optimize in unit cube
+    # box constraints: lowerbounds, upperbounds
+    # lb::Vector{Float64}
+    # ub::Vector{Float64}
+
+    # TODO: verbosity, for now we print everything
+    #verbosity::Any
 
     evaluation_counter::Any
-    total_duration::Any
     max_evaluations::Int
-    max_duration::Int
+    # TODO: duration; for now don't measure time
+    # total_duration::Any
+    # max_duration::Int
 
     hist_xs::Vector{Float64}
     hist_ys::Vector{Float64}
@@ -23,14 +30,26 @@ mutable struct OptimizationHelper
 end
 # TODO: checks inputs in constructor, e.g., @assert lb .<= ub
 
+function OptimizationHelper(f, dimension, max_evaluations)
+    # TODO: use Inf if minimizing
+    OptimizationHelper(f, dimension, 0, max_evaluations, [], [], -Inf,
+                       Vector{Float64}(NaN, dimension))
+end
+
 """
 Evaluate objective. Log number of function evaluations, total duration. Update
 observed optimizer & optimal value. This is the only place where f is ever evaluated.
 """
 function evaluate_objective!(oh::OptimizationHelper, xs)
-    # TODO: increase evaluation counter, total duration time in oh
-    # TODO: update observed optimizer
-    (oh.f).(xs)
+    # TODO: increase total duration time in oh
+    oh.evaluation_counter += length(xs)
+    ys = (oh.f).(xs)
+    argmax_ys = argmax(ys)
+    if oh.observed_optimum < ys[argmax_ys]
+        oh.observed_optimum = ys[argmax_ys]
+        oh.observed_optimizer = xs[argmax_ys]
+        # TODO: printing based on verbose levels
+        println("$(oh.evaluation_counter): Found better optimizer with objective approx. $(round(oh.observed_optimum), digits=2)")
+    end
+    ys
 end
-
-# TODO: printing based on verbose levels

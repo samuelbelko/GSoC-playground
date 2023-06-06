@@ -3,6 +3,7 @@ include("TurboTR.jl")
 """
 `TuRBO` with an arbitrary `AbstractSurrogate` local model.
 
+TODO: hyperparmeter optimization for GPs
 TODO: here assuming domain is [0,1]^dim and that we are maximizing
 TODO: it is not yet clear how it can work for an arbitrary `AbstractSurrogate`.
 """
@@ -10,16 +11,13 @@ mutable struct Turbo <: DecisionSupportModel
     # number of surrogates
     n_surrogates::Int
     batch_size::Int
-    # dimension of the domain
-    # TODO: dimension can be computed from lowerbounds but these are stored in OptimizationHelper..
-    dimension::Int
     # mum of initial samples for each local model
     n_init_for_local::Int
 
     isdone::Bool
     surrogates::Vector{AbstractSurrogate}
     trs::Vector{TurboTR}
-    # TODO: hyperparameters for each TR
+    # TODO: hyperparameters for each TR?
     # hyperparameters::Vector{Float64}
 
     # use these for construction of surrogates at initialization and init. after restarting a TR
@@ -30,7 +28,8 @@ mutable struct Turbo <: DecisionSupportModel
     tr_options::NamedTuple
 end
 
-function Turbo(n_surrogates, batch_size, dim, n_init_for_local, surrogate_type, surrogate_args,
+function Turbo(n_surrogates, batch_size, dim, n_init_for_local, surrogate_type,
+               surrogate_args,
                surrogate_kwargs; tr_options = (;))
     surrogate_type <: AbstractSurrogate ||
         throw(ArgumentError("expecting surrogate_type to be a subtype of AbstractSurrogate"))
@@ -78,7 +77,7 @@ function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
     # TODO: make initial sampler a parameter of Turbo
     # TODO: make it work for general domains (implement: from_unit_cube, to_unit_cube)
     # TODO: check if evaluation budget saved in oh is enough for running initialization_local!
-    xs = collect(ScaledSobolIterator(zeros(dsm.dimension), ones(dsm.dimension),
+    xs = collect(ScaledSobolIterator(zeros(oh.dimension), ones(oh.dimension),
                                      dsm.n_init_for_local))
     ys = evaluate_objective!(oh, xs)
 
@@ -89,7 +88,7 @@ function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
     # TODO!!! : maintain lengthscales (and possibly other hyperparameters)
     #            or somehow get them via Surrogates.jl (AbstractGPs)
     # `lengths` not yet as in the paper
-    lengths = repeat([tr_options.base_length], dsm.dimension)
+    lengths = repeat([tr_options.base_length], oh.dimension)
     lb, ub = compute_lb_up(center, lengths)
     # merge two NamedTuples with disjoint keys
     dsm.trs[i] = TurboTR(merge(tr_options,
@@ -128,9 +127,9 @@ function update!(dsm::Turbo, oh::OptimizationHelper, xs, ys)
         if dsm.trs[i].tr_isdone
             initiate_local!(dsm, oh, i)
         end
+        # TODO: maintain & optimize hyperparameters using log-marginal likelihood before
+        #       proposing next batch,
+        #       what to do for not GP local surrogates? (how to get lengthscales?)
+        #         - maybe don't adjust them at all, use multiple dispatch for calling other method.
     end
-    # TODO: maintain & optimize hyperparameters using log-marginal likelihood before
-    #       proposing next batch,
-    #       what to do for not GP local surrogates? (how to get lengthscales?)
-    #         - maybe don't adjust them at all, use multiple dispatch for calling other method.
 end

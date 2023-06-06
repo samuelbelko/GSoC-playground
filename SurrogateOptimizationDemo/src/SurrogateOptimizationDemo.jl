@@ -53,7 +53,6 @@ function optimize!(dsm::DecisionSupportModel, policy::Policy, oh::OptimizationHe
     end
 end
 
-
 # Ask-tell interface
 # Idea: use threads and pass a special objective function that pauses the execution
 # of the optimization loop until the objective value is provided by calling `tell!`.

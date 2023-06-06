@@ -68,7 +68,7 @@ function update_TR!(tr::TurboTR, tr_xs, tr_ys)
         tr.tr_isdone = true
     else
         # TODO!!! : update lengths wrt updated lengthscales
-        tr.lengths = repeat([tr_options.base_length], length(tr.lengths))
+        tr.lengths = tr_options.base_length .* ones(length(tr.lengths))
         tr.lb, tr.ub = compute_lb_up(tr.center, tr.lengths)
     end
 end
