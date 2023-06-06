@@ -30,7 +30,7 @@ mutable struct Turbo <: DecisionSupportModel
     tr_options::NamedTuple
 end
 
-function Turbo(n_surrogates, batch_size, dim, surrogate_type, surrogate_args,
+function Turbo(n_surrogates, batch_size, dim, n_init_for_local, surrogate_type, surrogate_args,
                surrogate_kwargs; tr_options = (;))
     surrogate_type <: AbstractSurrogate ||
         throw(ArgumentError("expecting surrogate_type to be a subtype of AbstractSurrogate"))
@@ -40,7 +40,7 @@ function Turbo(n_surrogates, batch_size, dim, surrogate_type, surrogate_args,
     # TODO: how to include default params specially for the GP model?
     #       - in the paper Matérn-5/2 kernel, constant mean, ARD with bounds on hyperparams.
     #         lengthscale λ_i in [0.005,2.0], signal variance s^2 in [0.05,20.0], noise var. σ^2 in [0.0005,0.1]
-    Turbo(n_surrogates, batch_size, dim, false,
+    Turbo(n_surrogates, batch_size, dim, n_init_for_local, false,
           Vector{AbstractSurrogate}(undef, n_surrogates),
           Vector{TurboTR}(undef, n_surrogates),
           surrogate_type, surrogate_args, surrogate_kwargs,

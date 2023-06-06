@@ -53,32 +53,25 @@ function optimize!(dsm::DecisionSupportModel, policy::Policy, oh::OptimizationHe
     end
 end
 
-# Turbo needs to restart TR when the correspoding local model has converged - it is not
-# very compatible with ask-tell interface. Probably also not necessary for the use-cases
-# of this algorihtm.
+
+# Ask-tell interface
+# Idea: use threads and pass a special objective function that pauses the execution
+# of the optimization loop until the objective value is provided by calling `tell!`.
+# 'ask!' retrieves the proposed observation locations before pausing the loop.
 #
 # """
-# return the next observation locations
+# Return the next observation locations.
 # """
 # function ask(dsm::DecisionSupportModel, plc::Policy, oh::OptimizationHelper)
-#     # callable object `plc` is a good use-case for multiple dispatch - we use it to specify
-#     # the interaction between a specific dsm type and a specific policy type
-#     xs = plc(dsm)
-#     log_ask!(oh, xs)
-#     xs
 # end
-
+#
 # """
-# trigger an update of the decision suport model to incorporate new observations
-# `ys` at locations `xs`
+# Update of the decision suport model to incorporate new values `ys` at points `xs`.
 # """
 # function tell!(dsm::DecisionSupportModel,
 #                oh::OptimizationHelper,
 #                xs::Vector{Float64},
 #                ys::Vector{Float64})
-#     update!(dsm, oh, xs, ys)
-#     # TODO: update observed_optimum in oh, append xs, ys to history
-#     # log_tell!(oh, xs, ys)
 # end
 
 end # module
