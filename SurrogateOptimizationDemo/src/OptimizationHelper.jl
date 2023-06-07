@@ -17,23 +17,25 @@ mutable struct OptimizationHelper
     # TODO: verbosity, for now we print everything
     #verbosity::Any
 
-    evaluation_counter::Any
+    evaluation_counter::Int
     max_evaluations::Int
     # TODO: duration; for now don't measure time
     # total_duration::Any
     # max_duration::Int
 
-    hist_xs::Vector{Float64}
+    # TODO: use NTuples for points istead of vectors?
+    hist_xs::Vector{Vector{Float64}}
     hist_ys::Vector{Float64}
     observed_optimum::Float64
     observed_optimizer::Vector{Float64}
 end
-# TODO: checks inputs in constructor, e.g., @assert lb .<= ub
 
+# TODO: checks inputs in constructor, e.g., @assert lb .<= ub
 function OptimizationHelper(f, dimension, max_evaluations)
     # TODO: use Inf if minimizing
-    OptimizationHelper(f, dimension, 0, max_evaluations, [], [], -Inf,
-                       Vector{Float64}(NaN, dimension))
+    OptimizationHelper(f, dimension, 0, max_evaluations, Vector{Vector{Float64}}(),
+                       Vector{Float64}(), -Inf,
+                       Vector{Float64}(undef, dimension))
 end
 
 """
@@ -43,13 +45,15 @@ observed optimizer & optimal value. This is the only place where f is ever evalu
 function evaluate_objective!(oh::OptimizationHelper, xs)
     # TODO: increase total duration time in oh
     oh.evaluation_counter += length(xs)
+    append!(oh.hist_xs, xs)
     ys = (oh.f).(xs)
+    append!(oh.hist_ys, ys)
     argmax_ys = argmax(ys)
     if oh.observed_optimum < ys[argmax_ys]
         oh.observed_optimum = ys[argmax_ys]
         oh.observed_optimizer = xs[argmax_ys]
         # TODO: printing based on verbose levels
-        println("$(oh.evaluation_counter): Found better optimizer with objective approx. $(round(oh.observed_optimum), digits=2)")
+        println("#Evaluations: $(oh.evaluation_counter); Best objective approx. $(round(oh.observed_optimum, digits=2))")
     end
     ys
 end

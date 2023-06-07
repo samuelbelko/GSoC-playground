@@ -20,40 +20,39 @@ mutable struct Turbo <: DecisionSupportModel
     # TODO: hyperparameters for each TR?
     # hyperparameters::Vector{Float64}
 
-    # use these for construction of surrogates at initialization and init. after restarting a TR
-    surrogate_type::Type
-    surrogate_args::Tuple
-    surrogate_kwargs::NamedTuple
+    # use these for constructing surrogates at initialization and init. after restarting a TR
+    create_surrogate::Function
     # save TR options for use in initialize!(..) and in later restarts of TRs
     tr_options::NamedTuple
+    # TODO: type of sobol seq ?
+    sobol_generator::Any
 end
 
-function Turbo(n_surrogates, batch_size, dim, n_init_for_local, surrogate_type,
-               surrogate_args,
-               surrogate_kwargs; tr_options = (;))
-    surrogate_type <: AbstractSurrogate ||
-        throw(ArgumentError("expecting surrogate_type to be a subtype of AbstractSurrogate"))
+function Turbo(n_surrogates, batch_size, n_init_for_local, dimension, create_surrogate;
+               tr_options = (;))
     # create placeholders for surrogates and trs;
     # merge TR options with defaults from the paper
 
     # TODO: how to include default params specially for the GP model?
     #       - in the paper Matérn-5/2 kernel, constant mean, ARD with bounds on hyperparams.
     #         lengthscale λ_i in [0.005,2.0], signal variance s^2 in [0.05,20.0], noise var. σ^2 in [0.0005,0.1]
-    Turbo(n_surrogates, batch_size, dim, n_init_for_local, false,
+    # TODO: skip inital samples for Sobol?
+    Turbo(n_surrogates, batch_size, n_init_for_local, false,
           Vector{AbstractSurrogate}(undef, n_surrogates),
           Vector{TurboTR}(undef, n_surrogates),
-          surrogate_type, surrogate_args, surrogate_kwargs,
-          merge_with_tr_defaults(tr_options, dim, batch_size))
+          create_surrogate,
+          merge_with_tr_defaults(tr_options, dimension, batch_size),
+          SobolSeq(dimension))
 end
 
-function merge_with_tr_defaults(tr_options, dim, batch_size)
+function merge_with_tr_defaults(tr_options, dimension, batch_size)
     # TODO: Set failure_tolerance using max as def. in https://botorch.org/tutorials/turbo_1 ?
     # Default hyperparameters from the paper for domain rescaled to [0,1]^dim
     tr_defaults = (base_length = 0.8,
                    length_min = 2^(-7),
                    length_max = 1.6,
                    failure_counter = 0,
-                   failure_tolerance = ceil(dim / batch_size),
+                   failure_tolerance = ceil(dimension / batch_size),
                    success_counter = 0,
                    success_tolerance = 3)
     @assert issubset(keys(tr_options), keys(tr_defaults))
@@ -77,30 +76,23 @@ function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
     # TODO: make initial sampler a parameter of Turbo
     # TODO: make it work for general domains (implement: from_unit_cube, to_unit_cube)
     # TODO: check if evaluation budget saved in oh is enough for running initialization_local!
-    xs = collect(ScaledSobolIterator(zeros(oh.dimension), ones(oh.dimension),
-                                     dsm.n_init_for_local))
+    xs = [next!(dsm.sobol_generator) for _ in 1:(dsm.n_init_for_local)]
     ys = evaluate_objective!(oh, xs)
 
-    dsm.surrogates[i] = create_surrogate(dsm, xs, ys)
+    dsm.surrogates[i] = dsm.create_surrogate(xs, ys)
     # set observed maximizer in a local model
     observed_maximizer = center = xs[argmax(ys)]
     observed_maximum = maximum(ys)
     # TODO!!! : maintain lengthscales (and possibly other hyperparameters)
     #            or somehow get them via Surrogates.jl (AbstractGPs)
     # `lengths` not yet as in the paper
-    lengths = repeat([tr_options.base_length], oh.dimension)
+    lengths = dsm.tr_options.base_length .* ones(oh.dimension)
     lb, ub = compute_lb_up(center, lengths)
     # merge two NamedTuples with disjoint keys
-    dsm.trs[i] = TurboTR(merge(tr_options,
+    dsm.trs[i] = TurboTR(merge(dsm.tr_options,
                                (lengths = lengths, center = center, lb = lb, ub = ub,
                                 observed_maximizer = observed_maximizer,
                                 observed_maximum = observed_maximum, tr_isdone = false))...)
-end
-
-# TODO: maybe instantiate a dsm with this function instead of surrogate type, args, kwargs
-function create_surrogate(dsm::Turbo, xs, ys)
-    # create an object of type surrogate_type which is a subtype of AbstractSurrogate
-    dsm.surrogate_type(xs, ys, dsm.surrogate_args...; dsm.surrogate_kwargs)
 end
 
 """

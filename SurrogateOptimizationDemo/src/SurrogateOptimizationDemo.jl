@@ -3,9 +3,9 @@ module SurrogateOptimizationDemo
 using Surrogates
 using AbstractGPs # access to kernels
 using SurrogatesAbstractGPs
-import Sobol: SobolSeq
+using Sobol
 
-export initialize!, optimize!, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
+export initialize!, optimize!, OptimizationHelper, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
 
 """
 Maintain a state of the decision support model (e.g. trust regions and local surrogates in TuRBO).
@@ -42,8 +42,8 @@ function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
 Run the optimization loop.
 """
 function optimize!(dsm::DecisionSupportModel, policy::Policy, oh::OptimizationHelper)
-    while !dsm.isdone && oh.total_duration <= oh.max_duration &&
-              oh.evaluation_counter <= oh.max_evaluations
+    # TODO: add `&& oh.total_duration <= oh.max_duration` once ready in oh
+    while !dsm.isdone && oh.evaluation_counter <= oh.max_evaluations
         # apply policy to get a new batch
         xs = policy(dsm)
         ys = evaluate_objective!(oh, xs)

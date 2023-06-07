@@ -26,14 +26,14 @@ mutable struct TurboTR
 end
 
 function in_tr(x, tr::TurboTR)
-    tr.lb .<= x .<= tr.ub
+    all(tr.lb .<= x .<= tr.ub)
 end
 
 function compute_lb_up(center, lengths)
     # intersection of TR with [0,1]^dim
-    lb = max.(0, min.(tr.center .- 1 / 2 .* tr.lengths, 1))
-    ub = max.(0, min.(tr.center .+ 1 / 2 .* tr.lengths, 1))
-    lb, up
+    lb = max.(0, min.(center .- 1 / 2 .* lengths, 1))
+    ub = max.(0, min.(center .+ 1 / 2 .* lengths, 1))
+    lb, ub
 end
 
 function update_TR!(tr::TurboTR, tr_xs, tr_ys)
@@ -68,7 +68,7 @@ function update_TR!(tr::TurboTR, tr_xs, tr_ys)
         tr.tr_isdone = true
     else
         # TODO!!! : update lengths wrt updated lengthscales
-        tr.lengths = tr_options.base_length .* ones(length(tr.lengths))
+        tr.lengths = tr.base_length .* ones(length(tr.lengths))
         tr.lb, tr.ub = compute_lb_up(tr.center, tr.lengths)
     end
 end
