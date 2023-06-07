@@ -114,10 +114,14 @@ function update!(dsm::Turbo, oh::OptimizationHelper, xs, ys)
             end
         end
         # update corresponding TR - counters, base_length, lengths, tr_isdone
-        update_TR!(dsm.trs[i], tr_xs, tr_ys)
+        if !isempty(tr_xs)
+            @assert !isempty(tr_ys)
+            update_TR!(dsm.trs[i], tr_xs, tr_ys)
+        end
         # restart TR if it converged
         if dsm.trs[i].tr_isdone
-            initiate_local!(dsm, oh, i)
+            println("restarting tr $(i)")
+            initialize_local!(dsm, oh, i)
         end
         # TODO: maintain & optimize hyperparameters using log-marginal likelihood before
         #       proposing next batch,

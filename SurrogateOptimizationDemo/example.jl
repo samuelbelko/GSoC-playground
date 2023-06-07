@@ -2,21 +2,22 @@
 using Pkg
 Pkg.activate("./SurrogateOptimizationDemo")
 
-using Plots
-plotlyjs()
+#using Plots
+#plotlyjs()
 
 using SurrogatesAbstractGPs
 
 using SurrogateOptimizationDemo
+rx,ry = rand(),rand()
 
-f(x) = -(x[1] - 0.5) * (x[2] - 0.5)
+f(x) = -(x[1] - rx)^2 - (x[2] - ry)^2
 
 function create_surrogate(xs, ys)
     # create an object of type surrogate_type which is a subtype of AbstractSurrogate
     AbstractGPSurrogate(xs, ys)
 end
 
-oh = OptimizationHelper(f, 2, 10^4)
+oh = OptimizationHelper(f, 2, 10^3)
 dsm = Turbo(3, 20, 10, 2, create_surrogate)
 policy = TurboPolicy(2)
 
