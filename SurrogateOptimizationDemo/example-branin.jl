@@ -26,20 +26,24 @@ function create_surrogate(xs, ys)
 end
 
 lb, ub = [-10,-10], [15,15]
-oh = OptimizationHelper(branin, Min, lb, ub, 1000)
-dsm = Turbo(5, 10, 10, 2, create_surrogate)
+oh = OptimizationHelper(branin, Min, lb, ub, 200)
+dsm = Turbo(2, 5, 10, 2, create_surrogate)
 policy = TurboPolicy(2)
 
 initialize!(dsm, oh)
 
-begin
+p() = begin
     plt = contour(-10:0.1:15, -10:0.1:15, (x, y) -> -branin([x, y]), levels=80, fill =true)
     plt = scatter!((x -> x[1]).(get_hist(oh)[1]), (x -> x[2]).(get_hist(oh)[1]), label="eval. hist")
     plt = scatter!((x -> x[1]).(mins), (y -> y[2]).(mins), label="true minima", markersize=10,shape=:diamond)
     plt = scatter!([get_solution(oh)[1][1]], [get_solution(oh)[1][2]], label="observed min.",shape=:rect)
 end
 
+p()
+
 optimize!(dsm, policy, oh)
+
+p()
 
 observed_dist = minimum((m -> norm(get_solution(oh)[1] .- m)).(mins))
 observed_regret = abs(get_solution(oh)[2] - fmin)
