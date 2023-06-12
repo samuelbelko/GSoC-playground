@@ -31,8 +31,11 @@ mutable struct OptimizationHelper
 end
 
 # TODO: checks inputs in constructor
-function OptimizationHelper(g, dimension, sense, lb, ub, max_evaluations)
+function OptimizationHelper(g, sense, lb, ub, max_evaluations)
     @assert all(lb .<= ub)
+    @assert length(lb) == length(ub)
+
+    dimension = length(lb)
     # Preprocessing: rescale domain to [0,1]^dim, make it a maximization problem
     f(x) = Int(sense) * g(from_unit_cube(x, lb, ub))
 

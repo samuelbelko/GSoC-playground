@@ -3,13 +3,11 @@ using Pkg
 Pkg.activate("./SurrogateOptimizationDemo")
 
 using Plots
-plotlyjs()
+#plotlyjs()
+gr()
 
 using SurrogatesAbstractGPs
 using SurrogateOptimizationDemo
-
-#rx, ry = rand(), rand()
-# f(x) = -(x[1] - rx)^2 - (x[2] - ry)^2
 
 # copied from BaysianOptimization.jl
 branin(x::Vector; kwargs...) = branin(x[1], x[2]; kwargs...)
@@ -24,16 +22,16 @@ function create_surrogate(xs, ys)
 end
 
 lb, ub = [-10,-10], [15,15]
-oh = OptimizationHelper(branin, 2, Min, lb, ub, 50)
+oh = OptimizationHelper(branin, Min, lb, ub, 50)
 dsm = Turbo(2, 2, 5, 2, create_surrogate)
 policy = TurboPolicy(2)
 
 initialize!(dsm, oh)
 
 begin
-    plt = scatter((x -> x[1]).(get_hist(oh)[1]), (x -> x[2]).(get_hist(oh)[1]), get_hist(oh)[2])
-    plt = surface!(-10:0.1:15, -10:0.1:15, (x, y) -> -branin([x, y]))
-    plt
+    plt = contour(-10:0.1:15, -10:0.1:15, (x, y) -> -branin([x, y]), levels=80, fill =true)
+    plt = scatter!((x -> x[1]).(get_hist(oh)[1]), (x -> x[2]).(get_hist(oh)[1]))
+    plt = scatter!([get_solution(oh)[1][1]], [get_solution(oh)[1][2]])
 end
 
 optimize!(dsm, policy, oh)
