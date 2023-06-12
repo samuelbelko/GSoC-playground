@@ -33,7 +33,6 @@ function Turbo(n_surrogates, batch_size, n_init_for_local, dimension, create_sur
                tr_options = (;))
     # create placeholders for surrogates and trs;
     # merge TR options with defaults from the paper
-
     # TODO: how to include default params specially for the GP model?
     #       - in the paper Matérn-5/2 kernel, constant mean, ARD with bounds on hyperparams.
     #         lengthscale λ_i in [0.005,2.0], signal variance s^2 in [0.05,20.0], noise var. σ^2 in [0.0005,0.1]

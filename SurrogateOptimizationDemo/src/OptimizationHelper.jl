@@ -26,8 +26,8 @@ mutable struct OptimizationHelper
     # evaluations in the normalized domain in [0,1]^dim
     hist_xs::Vector{Vector{Float64}}
     hist_ys::Vector{Float64}
-    observed_optimum::Float64
     observed_optimizer::Vector{Float64}
+    observed_optimum::Float64
 end
 
 # TODO: checks inputs in constructor
@@ -41,8 +41,9 @@ function OptimizationHelper(g, sense, lb, ub, max_evaluations)
 
     OptimizationHelper(f, dimension, sense, lb, ub, 0, max_evaluations,
                        Vector{Vector{Float64}}(),
-                       Vector{Float64}(), -Inf,
-                       Vector{Float64}(undef, dimension))
+                       Vector{Float64}(),
+                       Vector{Float64}(undef, dimension),
+                       -Inf)
 end
 
 """
