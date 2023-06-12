@@ -36,13 +36,16 @@ function Turbo(n_surrogates, batch_size, n_init_for_local, dimension, create_sur
     # TODO: how to include default params specially for the GP model?
     #       - in the paper Matérn-5/2 kernel, constant mean, ARD with bounds on hyperparams.
     #         lengthscale λ_i in [0.005,2.0], signal variance s^2 in [0.05,20.0], noise var. σ^2 in [0.0005,0.1]
-    # TODO: skip inital samples for Sobol?
+    # TODO: how many samples do we need to skip for Sobol for better uniformity?
+    sobol_gen = SobolSeq(dimension)
+    # skip first 2^10 -1 samples
+    skip(sobol_gen, 10)
     Turbo(n_surrogates, batch_size, n_init_for_local, false,
           Vector{AbstractSurrogate}(undef, n_surrogates),
           Vector{TurboTR}(undef, n_surrogates),
           create_surrogate,
           merge_with_tr_defaults(tr_options, dimension, batch_size),
-          SobolSeq(dimension))
+          sobol_gen)
 end
 
 function merge_with_tr_defaults(tr_options, dimension, batch_size)
@@ -81,13 +84,14 @@ function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
 
     dsm.surrogates[i] = dsm.create_surrogate(xs, ys)
     # set observed maximizer in a local model
+    # TODO: in noisy observations, set center to max. of posterior mean
     observed_maximizer = center = xs[argmax(ys)]
     observed_maximum = maximum(ys)
     # TODO!!! : maintain lengthscales (and possibly other hyperparameters)
     #            or somehow get them via Surrogates.jl (AbstractGPs)
     # `lengths` not yet as in the paper
     lengths = dsm.tr_options.base_length .* ones(oh.dimension)
-    lb, ub = compute_lb_up(center, lengths)
+    lb, ub = compute_lb_ub(center, lengths)
     # merge two NamedTuples with disjoint keys
     dsm.trs[i] = TurboTR(merge(dsm.tr_options,
                                (lengths = lengths, center = center, lb = lb, ub = ub,

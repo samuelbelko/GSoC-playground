@@ -47,11 +47,14 @@ function turbo_policy_seq(dsm::Turbo, candidate_size, prob_of_perturbation, j)
     # TODO: scrambled Sobol?
     for perturbation in (from_unit_cube(next!(dsm.sobol_generator), dsm.trs[j].lb,
                                         dsm.trs[j].ub) for _ in 1:candidate_size)
-        x = dsm.trs[j].center
+        x = copy(dsm.trs[j].center)
         # TODO: use seed for reproducibility?
         # each index is chosen with prob. prob_of_perturbation
-        inds = [i for i in 1:length(x) if rand() <= prob_of_perturbation]
-        x[inds] = perturbation[inds]
+        for i in 1:length(x)
+            if rand() <= prob_of_perturbation
+                x[i] = perturbation[i]
+            end
+        end
         push!(xs, x)
     end
     xs

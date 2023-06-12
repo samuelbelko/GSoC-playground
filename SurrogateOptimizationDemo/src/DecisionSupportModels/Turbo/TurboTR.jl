@@ -29,7 +29,7 @@ function in_tr(x, tr::TurboTR)
     all(tr.lb .<= x .<= tr.ub)
 end
 
-function compute_lb_up(center, lengths)
+function compute_lb_ub(center, lengths)
     # intersection of TR with [0,1]^dim
     lb = max.(0, min.(center .- 1 / 2 .* lengths, 1))
     ub = max.(0, min.(center .+ 1 / 2 .* lengths, 1))
@@ -69,6 +69,6 @@ function update_TR!(tr::TurboTR, tr_xs, tr_ys)
     else
         # TODO!!! : update lengths wrt updated lengthscales
         tr.lengths = tr.base_length .* ones(length(tr.lengths))
-        tr.lb, tr.ub = compute_lb_up(tr.center, tr.lengths)
+        tr.lb, tr.ub = compute_lb_ub(tr.center, tr.lengths)
     end
 end

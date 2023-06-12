@@ -23,7 +23,7 @@ mutable struct OptimizationHelper
     # total_duration::Any
     # max_duration::Int
 
-    # TODO: use NTuples for points istead of vectors?
+    # TODO: use NTuples for points instead of vectors?
     hist_xs::Vector{Vector{Float64}}
     hist_ys::Vector{Float64}
     observed_optimum::Float64
