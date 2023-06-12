@@ -5,7 +5,7 @@ using AbstractGPs # access to kernels
 using SurrogatesAbstractGPs
 using Sobol
 
-export initialize!, optimize!, OptimizationHelper, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
+export initialize!, optimize!, OptimizationHelper, get_hist, get_solution, Min, Max, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
 
 """
 Maintain a state of the decision support model (e.g. trust regions and local surrogates in TuRBO).
@@ -26,6 +26,9 @@ A policy may set the flag `isdone` in a decision support model to true (when the
 acquiring a new point outweights the information gain).
 """
 abstract type Policy end
+
+# idea from BaysianOptimization.jl
+@enum Sense Min=-1 Max=1
 
 include("OptimizationHelper.jl")
 include("DecisionSupportModels/Turbo/Turbo.jl")
