@@ -37,13 +37,17 @@ p() = begin
     plt = scatter!((x -> x[1]).(get_hist(oh)[1]), (x -> x[2]).(get_hist(oh)[1]), label="eval. hist")
     plt = scatter!((x -> x[1]).(mins), (y -> y[2]).(mins), label="true minima", markersize=10,shape=:diamond)
     plt = scatter!([get_solution(oh)[1][1]], [get_solution(oh)[1][2]], label="observed min.",shape=:rect)
+    plt # Make sure to return the plot object
 end
 
-p()
+# Save the plot to a file
+# savefig(p(), "plot_before_optimization.png")
 
+# Optimize
 optimize!(dsm, policy, oh)
 
-p()
+# Save the plot after optimization to a different file
+# savefig(p(), "plot_after_optimization.png")
 
-observed_dist = minimum((m -> norm(get_solution(oh)[1] .- m)).(mins))
-observed_regret = abs(get_solution(oh)[2] - fmin)
+# Display the final plot
+display(p())
