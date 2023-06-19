@@ -32,10 +32,9 @@ mins, fmin = minima(branin)
 # -------
 
 # --- with hyperopt.
-# create surrogate using parameters in hh
+
 function create_surrogate(xs, ys, hh::GPHyperparameterHandler)
-    kernel = hh.signal_var * with_lengthscale(Matern52Kernel(), hh.lengthscales)
-    AbstractGPSurrogate(xs, ys, gp = GP(kernel), Σy = hh.noise_var)
+     create_GP_surrogate(xs, ys, hh)
 end
 
 function create_hyperparameter_handler(init_xs, init_ys)

@@ -4,9 +4,12 @@ using Surrogates
 using AbstractGPs # access to kernels
 using SurrogatesAbstractGPs
 using Sobol
+using ParameterHandling
+using Optim # generic optimisation
+using Zygote
 
 export initialize!, optimize!, OptimizationHelper, GPHyperparameterHandler,
-       VoidHyperparameterHandler, get_hist, get_solution, Min, Max, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
+       VoidHyperparameterHandler, create_GP_surrogate, get_hist, get_solution, Min, Max, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
 
 """
 Maintain a state of the decision support model (e.g. trust regions and local surrogates in TuRBO).

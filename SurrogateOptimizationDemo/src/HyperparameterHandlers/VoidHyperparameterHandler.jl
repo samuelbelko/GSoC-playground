@@ -5,7 +5,7 @@ A consequence of `updated` being `false` at all times, is that we always use `ad
 when updating the corresponding local surrogate.
 """
 struct VoidHyperparameterHandler <: HyperparameterHandler
-    lengthscales::Vector{Float64}
+    θ::NamedTuple
     updated::Bool
 end
 
@@ -14,7 +14,7 @@ function VoidHyperparameterHandler(init_xs::Vector{Vector{Float64}}, init_ys::Ve
         throw(ArgumentError("initial sampling is empty, cannot initialize hyperparameters"))
     end
     dimension = length(init_xs[1])
-    VoidHyperparameterHandler(ones(dimension), false)
+    VoidHyperparameterHandler((; lengthscales = ones(dimension)), false)
 end
 
 function update_hyperparameters!(xs, ys, hh::VoidHyperparameterHandler)
