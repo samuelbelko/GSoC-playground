@@ -42,12 +42,15 @@ end
 
 # Save the plot to a file
 # savefig(p(), "plot_before_optimization.png")
+display(p())
 
 # Optimize
 optimize!(dsm, policy, oh)
 
 # Save the plot after optimization to a different file
 # savefig(p(), "plot_after_optimization.png")
-
 # Display the final plot
 display(p())
+
+observed_dist = minimum((m -> norm(get_solution(oh)[1] .- m)).(mins))
+observed_regret = abs(get_solution(oh)[2] - fmin)
