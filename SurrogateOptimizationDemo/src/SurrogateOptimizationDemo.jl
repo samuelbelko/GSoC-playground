@@ -5,7 +5,8 @@ using AbstractGPs # access to kernels
 using SurrogatesAbstractGPs
 using Sobol
 
-export initialize!, optimize!, OptimizationHelper, get_hist, get_solution, Min, Max, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
+export initialize!, optimize!, OptimizationHelper, GPHyperparameterHandler,
+       VoidHyperparameterHandler, get_hist, get_solution, Min, Max, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
 
 """
 Maintain a state of the decision support model (e.g. trust regions and local surrogates in TuRBO).
@@ -33,6 +34,7 @@ abstract type Policy end
 include("OptimizationHelper.jl")
 include("HyperparameterHandlers/HyperparameterHandler.jl")
 include("HyperparameterHandlers/GPHyperparameterHandler.jl")
+include("HyperparameterHandlers/VoidHyperparameterHandler.jl")
 include("DecisionSupportModels/Turbo/Turbo.jl")
 include("Policies/TurboPolicy.jl")
 include("utils.jl")

@@ -20,21 +20,32 @@ end
 minima(::typeof(branin)) = [[-π, 12.275], [π, 2.275], [9.42478, 2.475]], 0.397887
 mins, fmin = minima(branin)
 
-function create_GP_surrogate(xs, ys, hh::GPHyperparameterHandler)
-    # todo: take params from hh and build a new kernel
-    # create an object of type surrogate_type which is a subtype of AbstractSurrogate
-    # "kernel = hh.signal_var * SqExponentialKernel() ∘ ARDTransform( 1 ./ hh.lengthscales) + noise_var * white noise"
-    AbstractGPSurrogate(xs, ys, gp = GP(Matern52Kernel()), Σy = 0.1)
+# --- no hyperparm. optimization
+# function create_surrogate(xs, ys, hh::VoidHyperparameterHandler)
+#     # hh is not used to create a kernel
+#     AbstractGPSurrogate(xs, ys, gp = GP(Matern52Kernel()), Σy = 0.1)
+# end
+
+# function create_hyperparameter_handler(init_xs, init_ys)
+#     VoidHyperparameterHandler(init_xs, init_ys)
+# end
+# -------
+
+# --- with hyperopt.
+# create surrogate using parameters in hh
+function create_surrogate(xs, ys, hh::GPHyperparameterHandler)
+    kernel = hh.signal_var * with_lengthscale(Matern52Kernel(), hh.lengthscales)
+    AbstractGPSurrogate(xs, ys, gp = GP(kernel), Σy = hh.noise_var)
 end
 
-function create_hyperparameter_handler(dimension)
-    #ARD with bounds on hyperparams. lengthscale λ_i in [0.005,2.0], signal variance s^2 in [0.05,20.0], noise var. σ^2 in [0.0005,0.1]
-    GPHyperparameterHandler
+function create_hyperparameter_handler(init_xs, init_ys)
+    GPHyperparameterHandler(init_xs, init_ys)
 end
+# -------
 
 lb, ub = [-10, -10], [15, 15]
 oh = OptimizationHelper(branin, Min, lb, ub, 200)
-dsm = Turbo(2, 5, 10, 2, create_GP_surrogate)
+dsm = Turbo(2, 5, 10, 2, create_surrogate, create_hyperparameter_handler)
 policy = TurboPolicy(2)
 
 initialize!(dsm, oh)
@@ -48,13 +59,17 @@ function p()
                    markersize = 10, shape = :diamond)
     plt = scatter!([get_solution(oh)[1][1]], [get_solution(oh)[1][2]],
                    label = "observed min.", shape = :rect)
+    plt
 end
 
-p()
+# savefig(p(), "plot_before_optimization.png")
+display(p())
 
+# Optimize
 optimize!(dsm, policy, oh)
 
-p()
+# savefig(p(), "plot_after_optimization.png")
+display(p())
 
 observed_dist = minimum((m -> norm(get_solution(oh)[1] .- m)).(mins))
 observed_regret = abs(get_solution(oh)[2] - fmin)

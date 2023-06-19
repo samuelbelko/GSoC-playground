@@ -43,7 +43,7 @@ function Turbo(n_surrogates, batch_size, n_init_for_local, dimension, create_sur
     Turbo(n_surrogates, batch_size, n_init_for_local, false,
           Vector{AbstractSurrogate}(undef, n_surrogates),
           Vector{TurboTR}(undef, n_surrogates),
-          Vector{HyperparameterHandler}{undef, n_surrogates},
+          Vector{HyperparameterHandler}(undef, n_surrogates),
           create_surrogate,
           create_hyperparameter_handler,
           merge_with_tr_defaults(tr_options, dimension, batch_size),
@@ -79,16 +79,17 @@ We use it also for restarting a TR after its convergence.
 """
 function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
     # TODO: make initial sampler a parameter of Turbo
-    # TODO: make it work for general domains (implement: from_unit_cube, to_unit_cube)
     # TODO: check if evaluation budget saved in oh is enough for running initialization_local!
-    xs = [next!(dsm.sobol_generator) for _ in 1:(dsm.n_init_for_local)]
-    ys = evaluate_objective!(oh, xs)
+    init_xs = [next!(dsm.sobol_generator) for _ in 1:(dsm.n_init_for_local)]
+    init_ys = evaluate_objective!(oh, init_xs)
 
-    dsm.surrogates[i] = dsm.create_surrogate(xs, ys)
+    dsm.hyperparameter_handlers[i] = dsm.create_hyperparameter_handler(init_xs, init_ys)
+    dsm.surrogates[i] = dsm.create_surrogate(init_xs, init_ys,
+                                             dsm.hyperparameter_handlers[i])
     # set observed maximizer in a local model
     # TODO: in noisy observations, set center to max. of posterior mean
-    observed_maximizer = center = xs[argmax(ys)]
-    observed_maximum = maximum(ys)
+    observed_maximizer = center = init_xs[argmax(init_ys)]
+    observed_maximum = maximum(init_ys)
     # TODO!!! : maintain lengthscales (and possibly other hyperparameters)
     #            or somehow get them via Surrogates.jl (AbstractGPs)
     # `lengths` not yet as in the paper
@@ -99,7 +100,6 @@ function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
                                (lengths = lengths, center = center, lb = lb, ub = ub,
                                 observed_maximizer = observed_maximizer,
                                 observed_maximum = observed_maximum, tr_isdone = false))...)
-    dsm.hyperparameter_handlers[i] = create_hyperparameter_handler()
 end
 
 """
@@ -139,6 +139,7 @@ function update!(dsm::Turbo, oh::OptimizationHelper, xs, ys)
             println("restarting tr $(i)")
             initialize_local!(dsm, oh, i)
         end
-        update_hyperparameters!(dsm.surrogates[i].x, dsm.surrogates[i].y, dsm.hyperparameter_handlers[i])
+        update_hyperparameters!(dsm.surrogates[i].x, dsm.surrogates[i].y,
+                                dsm.hyperparameter_handlers[i])
     end
 end

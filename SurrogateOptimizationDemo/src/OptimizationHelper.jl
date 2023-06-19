@@ -72,5 +72,6 @@ function get_hist(oh::OptimizationHelper)
 end
 
 function get_solution(oh::OptimizationHelper)
-    from_unit_cube(oh.observed_optimizer, oh.lb, oh.ub), Int(oh.sense) * oh.observed_optimum
+    from_unit_cube(oh.observed_optimizer, oh.lb, oh.ub), Int(oh.sense) *
+                                                         oh.observed_optimum
 end
