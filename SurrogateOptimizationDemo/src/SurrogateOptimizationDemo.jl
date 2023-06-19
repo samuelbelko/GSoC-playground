@@ -31,6 +31,8 @@ abstract type Policy end
 @enum Sense Min=-1 Max=1
 
 include("OptimizationHelper.jl")
+include("HyperparameterHandlers/HyperparameterHandler.jl")
+include("HyperparameterHandlers/GPHyperparameterHandler.jl")
 include("DecisionSupportModels/Turbo/Turbo.jl")
 include("Policies/TurboPolicy.jl")
 include("utils.jl")

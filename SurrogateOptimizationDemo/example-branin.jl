@@ -14,29 +14,40 @@ using SurrogateOptimizationDemo
 # copied from BaysianOptimization.jl
 branin(x::Vector; kwargs...) = branin(x[1], x[2]; kwargs...)
 function branin(x1, x2; a = 1, b = 5.1 / (4π^2), c = 5 / π, r = 6, s = 10, t = 1 / (8π),
-    noiselevel = 0)
+                noiselevel = 0)
     a * (x2 - b * x1^2 + c * x1 - r)^2 + s * (1 - t) * cos(x1) + s + noiselevel * randn()
 end
 minima(::typeof(branin)) = [[-π, 12.275], [π, 2.275], [9.42478, 2.475]], 0.397887
 mins, fmin = minima(branin)
 
-function create_surrogate(xs, ys)
+function create_GP_surrogate(xs, ys, hh::GPHyperparameterHandler)
+    # todo: take params from hh and build a new kernel
     # create an object of type surrogate_type which is a subtype of AbstractSurrogate
+    # "kernel = hh.signal_var * SqExponentialKernel() ∘ ARDTransform( 1 ./ hh.lengthscales) + noise_var * white noise"
     AbstractGPSurrogate(xs, ys, gp = GP(Matern52Kernel()), Σy = 0.1)
 end
 
-lb, ub = [-10,-10], [15,15]
+function create_hyperparameter_handler(dimension)
+    #ARD with bounds on hyperparams. lengthscale λ_i in [0.005,2.0], signal variance s^2 in [0.05,20.0], noise var. σ^2 in [0.0005,0.1]
+    GPHyperparameterHandler
+end
+
+lb, ub = [-10, -10], [15, 15]
 oh = OptimizationHelper(branin, Min, lb, ub, 200)
-dsm = Turbo(2, 5, 10, 2, create_surrogate)
+dsm = Turbo(2, 5, 10, 2, create_GP_surrogate)
 policy = TurboPolicy(2)
 
 initialize!(dsm, oh)
 
-p() = begin
-    plt = contour(-10:0.1:15, -10:0.1:15, (x, y) -> -branin([x, y]), levels=80, fill =true)
-    plt = scatter!((x -> x[1]).(get_hist(oh)[1]), (x -> x[2]).(get_hist(oh)[1]), label="eval. hist")
-    plt = scatter!((x -> x[1]).(mins), (y -> y[2]).(mins), label="true minima", markersize=10,shape=:diamond)
-    plt = scatter!([get_solution(oh)[1][1]], [get_solution(oh)[1][2]], label="observed min.",shape=:rect)
+function p()
+    plt = contour(-10:0.1:15, -10:0.1:15, (x, y) -> -branin([x, y]), levels = 80,
+                  fill = true)
+    plt = scatter!((x -> x[1]).(get_hist(oh)[1]), (x -> x[2]).(get_hist(oh)[1]),
+                   label = "eval. hist")
+    plt = scatter!((x -> x[1]).(mins), (y -> y[2]).(mins), label = "true minima",
+                   markersize = 10, shape = :diamond)
+    plt = scatter!([get_solution(oh)[1][1]], [get_solution(oh)[1][2]],
+                   label = "observed min.", shape = :rect)
 end
 
 p()
