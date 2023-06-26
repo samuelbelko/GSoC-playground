@@ -34,7 +34,7 @@ mins, fmin = minima(branin)
 # --- with hyperopt.
 
 function create_surrogate(xs, ys, hh::GPHyperparameterHandler)
-     create_GP_surrogate(xs, ys, hh)
+    create_GP_surrogate(xs, ys, hh)
 end
 
 function create_hyperparameter_handler(init_xs, init_ys)
