@@ -18,24 +18,22 @@ mutable struct Turbo <: DecisionSupportModel
     isdone::Bool
     surrogates::Vector{AbstractSurrogate}
     trs::Vector{TurboTR}
-    # TODO: hyperparameters for each TR?
-    # hyperparameters::Vector{Float64}
+    # hyperparameters corresponding to local surrogates
+    hyperparameter_handlers::Vector{HyperparameterHandler}
 
     # use these for constructing surrogates at initialization and init. after restarting a TR
     create_surrogate::Function
+    create_hyperparameter_handler::Function
     # save TR options for use in initialize!(..) and in later restarts of TRs
     tr_options::NamedTuple
     # TODO: type of sobol seq ?
     sobol_generator::Any
 end
 
-function Turbo(n_surrogates, batch_size, n_init_for_local, dimension, create_surrogate;
-               tr_options = (;))
+function Turbo(n_surrogates, batch_size, n_init_for_local, dimension, create_surrogate,
+               create_hyperparameter_handler; tr_options = (;))
     # create placeholders for surrogates and trs;
     # merge TR options with defaults from the paper
-    # TODO: how to include default params specially for the GP model?
-    #       - in the paper Matérn-5/2 kernel, constant mean, ARD with bounds on hyperparams.
-    #         lengthscale λ_i in [0.005,2.0], signal variance s^2 in [0.05,20.0], noise var. σ^2 in [0.0005,0.1]
     # TODO: how many samples do we need to skip for Sobol for better uniformity?
     sobol_gen = SobolSeq(dimension)
     # skip first 2^10 -1 samples
@@ -43,7 +41,9 @@ function Turbo(n_surrogates, batch_size, n_init_for_local, dimension, create_sur
     Turbo(n_surrogates, batch_size, n_init_for_local, false,
           Vector{AbstractSurrogate}(undef, n_surrogates),
           Vector{TurboTR}(undef, n_surrogates),
+          Vector{HyperparameterHandler}(undef, n_surrogates),
           create_surrogate,
+          create_hyperparameter_handler,
           merge_with_tr_defaults(tr_options, dimension, batch_size),
           sobol_gen)
 end
@@ -77,20 +77,20 @@ We use it also for restarting a TR after its convergence.
 """
 function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
     # TODO: make initial sampler a parameter of Turbo
-    # TODO: make it work for general domains (implement: from_unit_cube, to_unit_cube)
     # TODO: check if evaluation budget saved in oh is enough for running initialization_local!
-    xs = [next!(dsm.sobol_generator) for _ in 1:(dsm.n_init_for_local)]
-    ys = evaluate_objective!(oh, xs)
-
-    dsm.surrogates[i] = dsm.create_surrogate(xs, ys)
-    # set observed maximizer in a local model
+    init_xs = [next!(dsm.sobol_generator) for _ in 1:(dsm.n_init_for_local)]
+    init_ys = evaluate_objective!(oh, init_xs)
+    # has to compute optimial hyperparameters from init_xs, init_ys here at inialization
+    dsm.hyperparameter_handlers[i] = dsm.create_hyperparameter_handler(init_xs, init_ys)
+    # use opt. hyperparmeters found on init_xs, init_ys
+    dsm.surrogates[i] = dsm.create_surrogate(init_xs, init_ys,
+                                             dsm.hyperparameter_handlers[i])
+    # set center to observed maximizer in a local model
     # TODO: in noisy observations, set center to max. of posterior mean
-    observed_maximizer = center = xs[argmax(ys)]
-    observed_maximum = maximum(ys)
-    # TODO!!! : maintain lengthscales (and possibly other hyperparameters)
-    #            or somehow get them via Surrogates.jl (AbstractGPs)
-    # `lengths` not yet as in the paper
-    lengths = dsm.tr_options.base_length .* ones(oh.dimension)
+    observed_maximizer = center = init_xs[argmax(init_ys)]
+    observed_maximum = maximum(init_ys)
+    # compute_lengths method from TurboTR.jl
+    lengths = compute_lengths(dsm.tr_options.base_length, get_lengthscales(dsm.hyperparameter_handlers[i]))
     lb, ub = compute_lb_ub(center, lengths)
     # merge two NamedTuples with disjoint keys
     dsm.trs[i] = TurboTR(merge(dsm.tr_options,
@@ -106,30 +106,38 @@ function update!(dsm::Turbo, oh::OptimizationHelper, xs, ys)
     @assert length(xs) == length(ys)
 
     for i in 1:(dsm.n_surrogates)
-        # filter out points in trust region tr
+        # filter out points in the i-th trust region
         tr_xs = []
         tr_ys = []
         for (x, y) in zip(xs, ys)
             if in_tr(x, dsm.trs[i])
                 push!(tr_xs, x)
                 push!(tr_ys, y)
-                # update corresponding local surrogate
+            end
+        end
+        new_xs = append!(dsm.surrogates[i].x, tr_xs)
+        new_ys = append!(dsm.surrogates[i].y, tr_ys)
+
+        update_hyperparameters!(new_xs, new_ys, dsm.hyperparameter_handlers[i])
+        # if we updated hyperparmeters, we need to fit a new local surrogate
+        if dsm.hyperparameter_handlers[i].updated
+            dsm.surrogates[i] = dsm.create_surrogate(new_xs, new_ys, dsm.hyperparameter_handlers[i])
+        else
+            # else update existing local surrogate
+            for (x, y) in zip(tr_xs, tr_ys)
                 add_point!(dsm.surrogates[i], x, y)
             end
         end
         # update corresponding TR - counters, base_length, lengths, tr_isdone
         if !isempty(tr_xs)
             @assert !isempty(tr_ys)
-            update_TR!(dsm.trs[i], tr_xs, tr_ys)
+            update_TR!(dsm.trs[i], tr_xs, tr_ys, get_lengthscales(dsm.hyperparameter_handlers[i]))
         end
         # restart TR if it converged
         if dsm.trs[i].tr_isdone
             println("restarting tr $(i)")
+            # initalize_local! performs hyperparamter optimization on initial sample
             initialize_local!(dsm, oh, i)
         end
-        # TODO: maintain & optimize hyperparameters using log-marginal likelihood before
-        #       proposing next batch,
-        #       what to do for not GP local surrogates? (how to get lengthscales?)
-        #         - maybe don't adjust them at all, use multiple dispatch for calling other method.
     end
 end

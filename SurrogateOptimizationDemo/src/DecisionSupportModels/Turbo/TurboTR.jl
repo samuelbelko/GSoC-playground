@@ -12,8 +12,8 @@ mutable struct TurboTR
     success_counter::Int
     success_tolerance::Int
 
-    # lengths for each dim are rescaled wrt lengthscales in fitted GP
-    # while maintaining volume (base_length)^dim
+    # lengths for each dim are rescaled wrt lengthscales in fitted GP while maintaining
+    # volume (base_length)^dim
     lengths::Vector{Float64}
     center::Vector{Float64}
     lb::Vector{Float64}
@@ -36,7 +36,13 @@ function compute_lb_ub(center, lengths)
     lb, ub
 end
 
-function update_TR!(tr::TurboTR, tr_xs, tr_ys)
+function compute_lengths(base_length, lengthscales)
+    # TODO: more stable as in https://github.com/uber-research/TuRBO/blob/de0db39f481d9505bb3610b7b7aa0ebf7702e4a5/turbo/turbo_1.py#L184
+    dimension = length(lengthscales)
+    lengthscales .* base_length ./ prod(lengthscales)^(1 / dimension)
+end
+
+function update_TR!(tr::TurboTR, tr_xs, tr_ys, lengthscales)
     @assert length(tr_xs) == length(tr_ys)
     # assert that xs are from curent TR? What if tr_xs = []?
     # TODO: add some epsilon to RHS like in (https://botorch.org/tutorials/turbo_1) ?
@@ -67,8 +73,8 @@ function update_TR!(tr::TurboTR, tr_xs, tr_ys)
     if tr.base_length < tr.length_min
         tr.tr_isdone = true
     else
-        # TODO!!! : update lengths wrt updated lengthscales
-        tr.lengths = tr.base_length .* ones(length(tr.lengths))
+        # update lengths wrt updated lengthscales
+        tr.lengths = compute_lengths(tr.base_length, lengthscales)
         tr.lb, tr.ub = compute_lb_ub(tr.center, tr.lengths)
     end
 end

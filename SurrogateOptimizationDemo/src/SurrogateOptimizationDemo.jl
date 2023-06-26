@@ -4,8 +4,13 @@ using Surrogates
 using AbstractGPs # access to kernels
 using SurrogatesAbstractGPs
 using Sobol
+using ParameterHandling
+using Optim # generic optimisation
+using Zygote
 
-export initialize!, optimize!, OptimizationHelper, get_hist, get_solution, Min, Max, Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
+export initialize!, optimize!, OptimizationHelper, GPHyperparameterHandler,
+       VoidHyperparameterHandler, create_GP_surrogate, get_hist, get_solution, Min, Max,
+       Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
 
 """
 Maintain a state of the decision support model (e.g. trust regions and local surrogates in TuRBO).
@@ -31,6 +36,9 @@ abstract type Policy end
 @enum Sense Min=-1 Max=1
 
 include("OptimizationHelper.jl")
+include("HyperparameterHandlers/HyperparameterHandler.jl")
+include("HyperparameterHandlers/GPHyperparameterHandler.jl")
+include("HyperparameterHandlers/VoidHyperparameterHandler.jl")
 include("DecisionSupportModels/Turbo/Turbo.jl")
 include("Policies/TurboPolicy.jl")
 include("utils.jl")
@@ -45,7 +53,7 @@ function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
 Run the optimization loop.
 """
 function optimize!(dsm::DecisionSupportModel, policy::Policy, oh::OptimizationHelper)
-    # TODO: add `&& oh.total_duration <= oh.max_duration` once ready in oh
+    # TODO: add `&& oh.total_duration <= oh.max_duration` once implemented in oh
     while !dsm.isdone && oh.evaluation_counter <= oh.max_evaluations
         # apply policy to get a new batch
         xs = policy(dsm)
