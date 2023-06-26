@@ -30,7 +30,7 @@ end
 
 function OptimizationHelper(g, sense::Sense, lb, ub, max_evaluations)
     max_evaluations <= 0 && throw(ArgumentError("max_evaluations <= 0"))
-    if length(lb) != length(ub) || ! all(lb .<= ub)
+    if length(lb) != length(ub) || !all(lb .<= ub)
         throw(ArgumentError("lowerbounds, upperbounds have different lengths or
                         lowerbounds are not componentwise less or equal to upperbounds"))
     end

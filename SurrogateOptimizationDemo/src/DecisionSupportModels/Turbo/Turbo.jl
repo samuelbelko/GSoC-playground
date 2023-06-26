@@ -90,7 +90,8 @@ function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
     observed_maximizer = center = init_xs[argmax(init_ys)]
     observed_maximum = maximum(init_ys)
     # compute_lengths method from TurboTR.jl
-    lengths = compute_lengths(dsm.tr_options.base_length, get_lengthscales(dsm.hyperparameter_handlers[i]))
+    lengths = compute_lengths(dsm.tr_options.base_length,
+                              get_lengthscales(dsm.hyperparameter_handlers[i]))
     lb, ub = compute_lb_ub(center, lengths)
     # merge two NamedTuples with disjoint keys
     dsm.trs[i] = TurboTR(merge(dsm.tr_options,
@@ -121,7 +122,8 @@ function update!(dsm::Turbo, oh::OptimizationHelper, xs, ys)
         update_hyperparameters!(new_xs, new_ys, dsm.hyperparameter_handlers[i])
         # if we updated hyperparmeters, we need to fit a new local surrogate
         if dsm.hyperparameter_handlers[i].updated
-            dsm.surrogates[i] = dsm.create_surrogate(new_xs, new_ys, dsm.hyperparameter_handlers[i])
+            dsm.surrogates[i] = dsm.create_surrogate(new_xs, new_ys,
+                                                     dsm.hyperparameter_handlers[i])
         else
             # else update existing local surrogate
             for (x, y) in zip(tr_xs, tr_ys)
@@ -131,7 +133,8 @@ function update!(dsm::Turbo, oh::OptimizationHelper, xs, ys)
         # update corresponding TR - counters, base_length, lengths, tr_isdone
         if !isempty(tr_xs)
             @assert !isempty(tr_ys)
-            update_TR!(dsm.trs[i], tr_xs, tr_ys, get_lengthscales(dsm.hyperparameter_handlers[i]))
+            update_TR!(dsm.trs[i], tr_xs, tr_ys,
+                       get_lengthscales(dsm.hyperparameter_handlers[i]))
         end
         # restart TR if it converged
         if dsm.trs[i].tr_isdone

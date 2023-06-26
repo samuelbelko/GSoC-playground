@@ -44,7 +44,7 @@ end
 
 lb, ub = [-15, -15], [15, 15]
 oh = OptimizationHelper(branin, Min, lb, ub, 200)
-dsm = Turbo(3, 5, 10, 2, create_surrogate, create_hyperparameter_handler)
+dsm = Turbo(2, 5, 10, 2, create_surrogate, create_hyperparameter_handler)
 policy = TurboPolicy(2)
 
 initialize!(dsm, oh)
