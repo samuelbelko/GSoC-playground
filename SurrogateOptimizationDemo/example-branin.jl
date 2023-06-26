@@ -1,45 +1,66 @@
 using Pkg
 Pkg.activate("./SurrogateOptimizationDemo")
 
-using Plots
-using LinearAlgebra
+using Plots, LinearAlgebra
 using AbstractGPs # access to kernels
 
 #plotlyjs()
 gr()
 
+using Surrogates,
 using SurrogatesAbstractGPs
+using Flux, SurrogatesFlux
 using SurrogateOptimizationDemo
 
 # copied from BaysianOptimization.jl
 branin(x::Vector; kwargs...) = branin(x[1], x[2]; kwargs...)
 function branin(x1, x2; a = 1, b = 5.1 / (4π^2), c = 5 / π, r = 6, s = 10, t = 1 / (8π),
-                noiselevel = 0)
+                noiselevel = 0.1)
     a * (x2 - b * x1^2 + c * x1 - r)^2 + s * (1 - t) * cos(x1) + s + noiselevel * randn()
 end
 minima(::typeof(branin)) = [[-π, 12.275], [π, 2.275], [9.42478, 2.475]], 0.397887
 mins, fmin = minima(branin)
 
-# --- no hyperparm. optimization
+# --- local GPs with hyperopt. -----
+function create_surrogate(xs, ys, hh::GPHyperparameterHandler)
+    create_GP_surrogate(xs, ys, hh)
+end
+function create_hyperparameter_handler(init_xs, init_ys)
+    GPHyperparameterHandler(init_xs, init_ys)
+end
+# -------
+
+# --- local GPs without hyperparm. optimization --------
 # function create_surrogate(xs, ys, hh::VoidHyperparameterHandler)
 #     # hh is not used to create a kernel
 #     AbstractGPSurrogate(xs, ys, gp = GP(Matern52Kernel()), Σy = 0.1)
 # end
-
 # function create_hyperparameter_handler(init_xs, init_ys)
 #     VoidHyperparameterHandler(init_xs, init_ys)
 # end
 # -------
 
-# --- with hyperopt.
+#--- SecondOrderPolynomialSurrogate without hyperopt. --
+# function create_surrogate(xs, ys, hh::VoidHyperparameterHandler)
+#     SecondOrderPolynomialSurrogate(xs, ys,[-15, -15], [15, 15])
+# end
+# function create_hyperparameter_handler(init_xs, init_ys)
+#     VoidHyperparameterHandler(init_xs, init_ys)
+# end
+#-------
 
-function create_surrogate(xs, ys, hh::GPHyperparameterHandler)
-    create_GP_surrogate(xs, ys, hh)
-end
-
-function create_hyperparameter_handler(init_xs, init_ys)
-    GPHyperparameterHandler(init_xs, init_ys)
-end
+# --- neural network as a surrogate without hyperopt. --
+# model1 = Chain(
+#   Dense(2, 5, σ),
+#   Dense(5,2,σ),
+#   Dense(2, 1)
+# )
+# function create_surrogate(xs, ys, hh::VoidHyperparameterHandler)
+#     NeuralSurrogate(xs, ys,[-15, -15], [15, 15],model = model1, n_echos = 10)
+# end
+# function create_hyperparameter_handler(init_xs, init_ys)
+#     VoidHyperparameterHandler(init_xs, init_ys)
+# end
 # -------
 
 lb, ub = [-15, -15], [15, 15]
