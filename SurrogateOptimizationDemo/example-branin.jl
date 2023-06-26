@@ -42,15 +42,15 @@ function create_hyperparameter_handler(init_xs, init_ys)
 end
 # -------
 
-lb, ub = [-10, -10], [15, 15]
+lb, ub = [-15, -15], [15, 15]
 oh = OptimizationHelper(branin, Min, lb, ub, 200)
-dsm = Turbo(2, 5, 10, 2, create_surrogate, create_hyperparameter_handler)
+dsm = Turbo(3, 5, 10, 2, create_surrogate, create_hyperparameter_handler)
 policy = TurboPolicy(2)
 
 initialize!(dsm, oh)
 
 function p()
-    plt = contour(-10:0.1:15, -10:0.1:15, (x, y) -> -branin([x, y]), levels = 80,
+    plt = contour(-15:0.1:15, -15:0.1:15, (x, y) -> -branin([x, y]), levels = 80,
                   fill = true)
     plt = scatter!((x -> x[1]).(get_hist(oh)[1]), (x -> x[2]).(get_hist(oh)[1]),
                    label = "eval. hist")

@@ -25,7 +25,7 @@ function GPHyperparameterHandler(init_xs::Vector{Vector{Float64}}, init_ys::Vect
                 noise_var = (min = 0.0005, max = 0.1))
     # hyperparm opt. on init_xs, init_ys
     θ_opt = compute_θ_opt(init_xs, init_ys, θ_bounds)
-    GPHyperparameterHandler(θ_opt, θ_bounds, false)
+    GPHyperparameterHandler(θ_opt, θ_bounds, true)
 end
 
 function compute_θ_init(xs, ys, θ_bounds)

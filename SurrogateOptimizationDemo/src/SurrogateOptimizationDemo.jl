@@ -53,7 +53,7 @@ function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
 Run the optimization loop.
 """
 function optimize!(dsm::DecisionSupportModel, policy::Policy, oh::OptimizationHelper)
-    # TODO: add `&& oh.total_duration <= oh.max_duration` once ready in oh
+    # TODO: add `&& oh.total_duration <= oh.max_duration` once implemented in oh
     while !dsm.isdone && oh.evaluation_counter <= oh.max_evaluations
         # apply policy to get a new batch
         xs = policy(dsm)
