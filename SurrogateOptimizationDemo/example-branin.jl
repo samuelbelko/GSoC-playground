@@ -7,15 +7,15 @@ using AbstractGPs # access to kernels
 #plotlyjs()
 gr()
 
-using Surrogates,
+using Surrogates
 using SurrogatesAbstractGPs
-using Flux, SurrogatesFlux
+# using Flux, SurrogatesFlux
 using SurrogateOptimizationDemo
 
 # copied from BaysianOptimization.jl
 branin(x::Vector; kwargs...) = branin(x[1], x[2]; kwargs...)
 function branin(x1, x2; a = 1, b = 5.1 / (4π^2), c = 5 / π, r = 6, s = 10, t = 1 / (8π),
-                noiselevel = 0.1)
+                noiselevel = 0)
     a * (x2 - b * x1^2 + c * x1 - r)^2 + s * (1 - t) * cos(x1) + s + noiselevel * randn()
 end
 minima(::typeof(branin)) = [[-π, 12.275], [π, 2.275], [9.42478, 2.475]], 0.397887
@@ -67,7 +67,7 @@ lb, ub = [-15, -15], [15, 15]
 # instantiate OptimizationHelper
 oh = OptimizationHelper(branin, Min, lb, ub, 200)
 # instantiate DecisionSupportModel
-dsm = Turbo(2, 5, 10, 2, create_surrogate, create_hyperparameter_handler)
+dsm = Turbo(3, 5, 10, 2, create_surrogate, create_hyperparameter_handler)
 # instantiate a compatible policy, i.e., we can obtain next evaluation point via `policy(dsm)`
 policy = TurboPolicy(2)
 # run initial sampling, create initial trust regions and local models
