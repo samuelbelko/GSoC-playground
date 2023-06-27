@@ -20,7 +20,6 @@ mutable struct OptimizationHelper
     # total_duration::Any
     # max_duration::Int
 
-    # TODO: use NTuples for points instead of vectors?
     # evaluations in the normalized domain in [0,1]^dim
     hist_xs::Vector{Vector{Float64}}
     hist_ys::Vector{Float64}

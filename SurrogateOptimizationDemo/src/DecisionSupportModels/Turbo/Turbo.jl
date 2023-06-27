@@ -4,9 +4,6 @@ include("TurboTR.jl")
 `TuRBO` with an arbitrary `AbstractSurrogate` local model.
 
 We assume that the domain is [0,1]^dim and we are maximizing.
-
-TODO: hyperparmeter optimization for GPs
-TODO: it is not yet clear how it can work for an arbitrary `AbstractSurrogate`.
 """
 mutable struct Turbo <: DecisionSupportModel
     # number of surrogates

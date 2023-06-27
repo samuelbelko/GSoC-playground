@@ -64,10 +64,13 @@ end
 # -------
 
 lb, ub = [-15, -15], [15, 15]
+# instantiate OptimizationHelper
 oh = OptimizationHelper(branin, Min, lb, ub, 200)
+# instantiate DecisionSupportModel
 dsm = Turbo(2, 5, 10, 2, create_surrogate, create_hyperparameter_handler)
+# instantiate a compatible policy, i.e., we can obtain next evaluation point via `policy(dsm)`
 policy = TurboPolicy(2)
-
+# run initial sampling, create initial trust regions and local models
 initialize!(dsm, oh)
 
 function p()

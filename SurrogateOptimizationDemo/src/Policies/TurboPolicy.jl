@@ -1,8 +1,5 @@
 """
 A policy from TuRBO algorithm for deciding where to sample next.
-
-TODO: if we cannot implement it generally for all types of local surrogates,
-     we can consider TuRBO{T} and constraint T to some abstract type
 """
 mutable struct TurboPolicy <: Policy
     # for each TR use candidate_size many points to approximate a sample function
@@ -40,7 +37,6 @@ function (policy::TurboPolicy)(dsm::Turbo)
     next_points
 end
 
-# TODO: modified Sobol sequence at the intersection of [0,1]^d and j-th TR
 function turbo_policy_seq(dsm::Turbo, candidate_size, prob_of_perturbation, j)
     xs = []
     # following the construction from the paper: supplement material part D; and python implementation
@@ -48,7 +44,6 @@ function turbo_policy_seq(dsm::Turbo, candidate_size, prob_of_perturbation, j)
     for perturbation in (from_unit_cube(next!(dsm.sobol_generator), dsm.trs[j].lb,
                                         dsm.trs[j].ub) for _ in 1:candidate_size)
         x = copy(dsm.trs[j].center)
-        # TODO: use seed for reproducibility?
         # each index is chosen with prob. prob_of_perturbation
         for i in 1:length(x)
             if rand() <= prob_of_perturbation

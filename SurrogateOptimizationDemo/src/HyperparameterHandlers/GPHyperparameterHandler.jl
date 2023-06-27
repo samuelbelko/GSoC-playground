@@ -91,7 +91,7 @@ function minimize(loss, θ_init; optimizer = default_optimizer, maxiter = 1_000)
 end
 
 function compute_θ_opt(xs, ys, θ_bounds)
-    # TODO: start optimization more times with different init. params
+    # TODO: start optimization more times with different initial points
     θ_init = compute_θ_init(xs, ys, θ_bounds)
     loss = setup_loss(xs, ys)
     return minimize(loss, θ_init)
