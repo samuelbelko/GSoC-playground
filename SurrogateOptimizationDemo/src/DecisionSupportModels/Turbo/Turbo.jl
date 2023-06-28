@@ -3,7 +3,7 @@ include("TurboTR.jl")
 """
 `TuRBO` with an arbitrary `AbstractSurrogate` local model.
 
-We assume that the domain is [0,1]^dim and we are maximizing.
+We assume that the domain is `[0,1]^dim` and we are maximizing.
 """
 mutable struct Turbo <: DecisionSupportModel
     # number of surrogates
@@ -11,13 +11,11 @@ mutable struct Turbo <: DecisionSupportModel
     batch_size::Int
     # mum of initial samples for each local model
     n_init_for_local::Int
-
     isdone::Bool
     surrogates::Vector{AbstractSurrogate}
     trs::Vector{TurboTR}
     # hyperparameters corresponding to local surrogates
     hyperparameter_handlers::Vector{HyperparameterHandler}
-
     # use these for constructing surrogates at initialization and init. after restarting a TR
     create_surrogate::Function
     create_hyperparameter_handler::Function
@@ -74,7 +72,7 @@ We use it also for restarting a TR after its convergence.
 """
 function initialize_local!(dsm::Turbo, oh::OptimizationHelper, i)
     # TODO: make initial sampler a parameter of Turbo
-    # TODO: check if evaluation budget saved in oh is enough for running initialization_local!
+    # TODO: check if evaluation budget saved in oh is enough for running initialize_local!
     init_xs = [next!(dsm.sobol_generator) for _ in 1:(dsm.n_init_for_local)]
     init_ys = evaluate_objective!(oh, init_xs)
     # has to compute optimial hyperparameters from init_xs, init_ys here at inialization
@@ -102,7 +100,6 @@ Process new evaluations `ys` at points `xs`, i.e, update local models and adapt 
 """
 function update!(dsm::Turbo, oh::OptimizationHelper, xs, ys)
     @assert length(xs) == length(ys)
-
     for i in 1:(dsm.n_surrogates)
         # filter out points in the i-th trust region
         tr_xs = []

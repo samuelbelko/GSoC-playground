@@ -1,8 +1,10 @@
 """
 Use for surrogates that don't need hyperparameter optimization.
 
+If used with Turbo DecisionSupportModel:
 Field `updated` is being `false` at all times, which imples that we always use `add_point!`
-when updating the corresponding local surrogate. Hyperparameter `lengthscales` is set to
+instead of creating a new local surrogate with new hyperparameters, when updating
+the corresponding local surrogate. Hyperparameter `lengthscales` is set to
 a constant vector with entries `1.0`.
 """
 struct VoidHyperparameterHandler <: HyperparameterHandler

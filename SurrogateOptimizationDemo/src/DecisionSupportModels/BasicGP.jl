@@ -1,5 +1,5 @@
 """
-Basic BO with a GP.
+TODO: Basic BO with a GP.
 """
 mutable struct BasicGP <: DecisionSupportModel
     isdone::Bool

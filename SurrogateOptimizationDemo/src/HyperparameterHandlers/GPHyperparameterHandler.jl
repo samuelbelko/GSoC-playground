@@ -109,7 +109,10 @@ end
 
 # --- related utilities but not for hyperparameter optimization ---
 
-# create AbstractGPSurrogate (not GP from AbstractGPs) using parameters in hh
+"""
+Create an AbstractGPSurrogate object (not a `GP` object from AbstractGPs, but a wrapper from
+`Surrogates.jl`) using hyperparmeters maintained in `hh::GPHyperparameterHandler`.
+"""
 function create_GP_surrogate(xs, ys, hh::GPHyperparameterHandler)
     AbstractGPSurrogate(xs, ys, gp = GP(create_kernel(ParameterHandling.value(hh.θ))),
                         Σy = ParameterHandling.value(hh.θ.noise_var))

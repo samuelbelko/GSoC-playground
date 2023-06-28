@@ -10,27 +10,42 @@ using Zygote
 
 export initialize!, optimize!, OptimizationHelper, GPHyperparameterHandler,
        VoidHyperparameterHandler, create_GP_surrogate, get_hist, get_solution, Min, Max,
-       Turbo, TurboPolicy # and some concrete subtypes of DSMs and Policies
+       Turbo, TurboPolicy # and some other subtypes of DSMs and Policies in the future
 
 """
-Maintain a state of the decision support model (e.g. trust regions and local surrogates in TuRBO).
+Maintain a state of the decision support model (e.g. trust regions, local surrogates and
+corresponding HyperparameterHandler objects for maintaining their hyperparameters in TuRBO).
 
-Provide `update!(dsm::DecisionSupportModel, oh::OptimizationHelper, xs, ys)` for aggregation
-of evaluations `ys` at points `xs` into a decision model.
-TODO: what does a policy need from a dsm?
+A DecisionSupportModel is used by the policy to decide where to sample next.
 """
 abstract type DecisionSupportModel end
+
+"""
+Perform initial sampling, evaluate f on them and process evaluations in
+a decision support model.
+"""
+function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
+
+"""
+Process evaluations `ys` at points `xs`, i.e., aggregate new data into a decion model.
+"""
+function update!(dsm::DecisionSupportModel, oh::OptimizationHelper, xs, ys) end
+
 """
 Decide where we evaluate the objective function next based on information aggregated
 in a decision support model.
 
 In particular, take care of details regarding acquisition functions & solvers for them.
-An object `policy` of type Policy is callable, run `policy(dsm::DecisionSupportModel)`
-to get the next batch of points for evaluation.
 A policy may set the flag `isdone` in a decision support model to true (when the cost of
 acquiring a new point outweights the information gain).
 """
 abstract type Policy end
+
+"""
+An object `policy` of type Policy is callable, run `policy(dsm::DecisionSupportModel)`
+to get the next batch of points for evaluation.
+"""
+function (policy::Policy)(dsm::DecisionSupportModel)
 
 # idea from BaysianOptimization.jl
 @enum Sense Min=-1 Max=1
@@ -42,12 +57,6 @@ include("HyperparameterHandlers/VoidHyperparameterHandler.jl")
 include("DecisionSupportModels/Turbo/Turbo.jl")
 include("Policies/TurboPolicy.jl")
 include("utils.jl")
-
-"""
-Generate initial sample points, evaluate f on them and process evaluations in
-a decision support model.
-"""
-function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
 
 """
 Run the optimization loop.
@@ -70,7 +79,7 @@ end
 # 'ask!' retrieves the proposed observation locations before pausing the loop.
 #
 # """
-# Return the next observation locations.
+# Return the next batch of points for evaluation.
 # """
 # function ask(dsm::DecisionSupportModel, plc::Policy, oh::OptimizationHelper)
 # end

@@ -6,22 +6,18 @@ mutable struct TurboTR
     base_length::Float64
     length_min::Float64
     length_max::Float64
-
     failure_counter::Int
     failure_tolerance::Int
     success_counter::Int
     success_tolerance::Int
-
     # lengths for each dim are rescaled wrt lengthscales in fitted GP while maintaining
     # volume (base_length)^dim
     lengths::Vector{Float64}
     center::Vector{Float64}
     lb::Vector{Float64}
     ub::Vector{Float64}
-
     observed_maximizer::Vector{Float64}
     observed_maximum::Float64
-
     tr_isdone::Bool
 end
 
@@ -42,6 +38,9 @@ function compute_lengths(base_length, lengthscales)
     lengthscales .* base_length ./ prod(lengthscales)^(1 / dimension)
 end
 
+"""
+Update TR state - success and failure counters, base_length, lengths, tr_isdone.
+"""
 function update_TR!(tr::TurboTR, tr_xs, tr_ys, lengthscales)
     @assert length(tr_xs) == length(tr_ys)
     # assert that xs are from curent TR? What if tr_xs = []?
