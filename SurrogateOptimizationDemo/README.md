@@ -1,3 +1,12 @@
+## Notes on implementation
+
+The main file `SurrogateOptimizationDemo.jl` contains the abstract optimization loop (evaluate policy that uses a decision support model to get a batch of points `xs`; evaluate objective ys = f.(xs), maintain stats; update decision support model; iterate).
+
+The TuRBO algorithm is implemented as a `Turbo` decision support model with a compatible `TurboPolicy` policy.
+All stats regarding optimization, e.g., function evaluation counter etc. are maintained in an `OptimizationHelper`. This can be used independently of the choice of a decision support model + policy.
+
+For hyperparameter optimization of a general surrogate, we have an abstract type `HyperparameterHandler`. In Turbo algorithm, we maintain an array of those for each local surrogate in `Turbo`  decision support model. There is a concrete type `GPHyperparameterHandler` for hyperparameter tuning regarding to Gaussian processes (GPs) and `VoidHyperparameterHandler` that can be used to avoid hyperparameter optimization.
+
 ### Example use: TuRBO algorithm
 
 Please see also `example-branin.jl` for a concrete example and docs in code.
