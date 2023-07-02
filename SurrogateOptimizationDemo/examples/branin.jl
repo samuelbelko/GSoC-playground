@@ -1,4 +1,5 @@
 using Pkg
+# assuming we are at GSoC-playground folder
 Pkg.activate("./SurrogateOptimizationDemo")
 
 using Plots, LinearAlgebra
@@ -21,7 +22,7 @@ end
 minima(::typeof(branin)) = [[-π, 12.275], [π, 2.275], [9.42478, 2.475]], 0.397887
 mins, fmin = minima(branin)
 
-# --- local GPs with hyperopt. -----
+# --- GPs with hyperopt. -----
 function create_surrogate(xs, ys, hh::GPHyperparameterHandler)
     create_GP_surrogate(xs, ys, hh)
 end
@@ -30,7 +31,7 @@ function create_hyperparameter_handler(init_xs, init_ys)
 end
 # -------
 
-# --- local GPs without hyperparm. optimization --------
+# --- GPs without hyperparm. optimization --------
 # function create_surrogate(xs, ys, hh::VoidHyperparameterHandler)
 #     # hh is not used to create a kernel
 #     AbstractGPSurrogate(xs, ys, gp = GP(Matern52Kernel()), Σy = 0.1)
@@ -63,10 +64,12 @@ end
 # end
 # -------
 
+# lb = left bottom point in domain, ub = top right point in domain
 lb, ub = [-15, -15], [15, 15]
 # instantiate OptimizationHelper
 oh = OptimizationHelper(branin, Min, lb, ub, 200)
 # instantiate DecisionSupportModel
+# n_surrogates, batch_size, n_init_for_local, dimension, create_surrogate, create_hyperparameter_handler
 dsm = Turbo(3, 5, 10, 2, create_surrogate, create_hyperparameter_handler)
 # instantiate a compatible policy, i.e., we can obtain next evaluation point via `policy(dsm)`
 policy = TurboPolicy(2)

@@ -21,17 +21,6 @@ A DecisionSupportModel is used by the policy to decide where to sample next.
 abstract type DecisionSupportModel end
 
 """
-Perform initial sampling, evaluate f on them and process evaluations in
-a decision support model.
-"""
-function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
-
-"""
-Process evaluations `ys` at points `xs`, i.e., aggregate new data into a decion model.
-"""
-function update!(dsm::DecisionSupportModel, oh::OptimizationHelper, xs, ys) end
-
-"""
 Decide where we evaluate the objective function next based on information aggregated
 in a decision support model.
 
@@ -40,12 +29,6 @@ A policy may set the flag `isdone` in a decision support model to true (when the
 acquiring a new point outweights the information gain).
 """
 abstract type Policy end
-
-"""
-An object `policy` of type Policy is callable, run `policy(dsm::DecisionSupportModel)`
-to get the next batch of points for evaluation.
-"""
-function (policy::Policy)(dsm::DecisionSupportModel)
 
 # idea from BaysianOptimization.jl
 @enum Sense Min=-1 Max=1
@@ -57,6 +40,23 @@ include("HyperparameterHandlers/VoidHyperparameterHandler.jl")
 include("DecisionSupportModels/Turbo/Turbo.jl")
 include("Policies/TurboPolicy.jl")
 include("utils.jl")
+
+"""
+Perform initial sampling, evaluate f on them and process evaluations in
+a decision support model.
+"""
+function initialize!(dsm::DecisionSupportModel, oh::OptimizationHelper) end
+
+"""
+Process evaluations `ys` at points `xs`, i.e., aggregate new data into a decion model.
+"""
+function update!(dsm::DecisionSupportModel, oh::OptimizationHelper, xs, ys) end
+
+"""
+An object `policy` of type Policy is callable, run `policy(dsm::DecisionSupportModel)`
+to get the next batch of points for evaluation.
+"""
+function (policy::Policy)(dsm::DecisionSupportModel) end
 
 """
 Run the optimization loop.

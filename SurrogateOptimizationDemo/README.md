@@ -9,7 +9,7 @@ For hyperparameter optimization of a general surrogate, we have an abstract type
 
 ### Example use: TuRBO algorithm
 
-Please see also `example-branin.jl` for a concrete example and docs in code.
+Please see also `examples/branin.jl` for a concrete example and docs in code.
 
 1. define `create_surrogate(xs, ys, hh::GPHyperparameterHandler)` method for creating local surrogates using hyperparameters in `hh` and evaluation data `xs`, `ys`
 2. define `create_hyperparameter_handler(init_xs, init_ys)` method for creating a `HyperparameterHandler` managing hyperparameters of a local surrogate; `init_xs`, `init_ys` are an initial sample used for instantiation of first hyperparameters
